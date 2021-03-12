@@ -71,20 +71,7 @@ public class CampaignIn {
 	@JsonProperty("VC_source")
 	private String source;
 	
-	@JsonProperty("VC_station_cartID")
-	private String stationCarts;
-	
 	//The image name is not passed from controller. It is a constant that will be saved only if image param comes with a value from controller.
 	private String imageName;
-	
-	
-	@JsonProperty("Q_Ad_URL")
-	private String previewUrl;
-	
-	@JsonProperty("VC_PO_name")
-	private String Q_station_not_enabled;
-	
-	@JsonProperty("VC_PO_name")
-	private String Q_station_req_approval;
-	
+		
 }

@@ -28,8 +28,8 @@ public class CampaignOut {
 	@JsonProperty
 	private String VC_POID;
 	
-	@JsonProperty("Q_Ad_ID")
-	private int orderId;
+	//@JsonProperty("Q_Ad_ID")
+	//private int orderId;
 	
 	@JsonProperty("Q_Campaign_ID")
 	private int id;  //Line item id
@@ -37,10 +37,11 @@ public class CampaignOut {
 	@JsonProperty("Q_Ad_URL")
 	private String previewUrl;
 	
+	/* These will be in the response from assign
 	@JsonProperty("Q_station_not_enabled")
 	private String stationsNotEnabled;
 	
 	@JsonProperty("Q_station_req_approval")
 	private String stationsReqApproval;
-	
+	*/
 }

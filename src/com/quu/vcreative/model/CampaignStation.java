@@ -15,10 +15,10 @@ import lombok.Setter;
 @Setter
 public class CampaignStation {
 
-	@JsonProperty
+	@JsonProperty("Q_Campaign_ID")
 	private int id;
 	
-	@JsonProperty("stationCarts")
+	@JsonProperty("VC_station_cartID")
 	private List<StationCart> stationCartList;
 	
 }

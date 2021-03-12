@@ -12,7 +12,7 @@ public interface ICampaignService {
 
     public int update(CampaignIn campaign);
     
-    public int assignStationsCarts(CampaignStation campaignStation);
+    public String[] assignStationsCarts(CampaignStation campaignStation);
     
     public int deactivate(int id);
 	

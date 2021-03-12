@@ -46,13 +46,12 @@ public class CampaignService implements ICampaignService{
 	    	new Thread(() -> {
 		    	
 	    		//Handle image base64 to url conversion and save on image server
-	    		//String params = "imagePath=campaign_images/" + id + "/logo&name=" + IMAGENAME + "&base64String=" + campaign.getImage();
 	    		Map<String, String> params = new HashMap<String, String>();
+	    		params.put("url", VCImageUrl);
 	    		params.put("imagePath", "campaign_images/" + id + "/logo");
 	    		params.put("name", imageNameF);
-	    		params.put("base64String", VCImageUrl);
-	        	
-	    		Util.getWebResponse(Constant.BASE64STRINGTOIMAGESERVICE_URL, params, false);
+	    			        	
+	    		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
 	        	
 		    }).start();
     	}
@@ -73,31 +72,43 @@ public class CampaignService implements ICampaignService{
     		campaign.setImageName(imageName);
     	}
     	
-    	int id = campaignDAO.update(campaign);
+    	int[] ret = campaignDAO.update(campaign);
     	
-    	if(imageName != null)
+    	int updateCount = ret[0];
+    	
+    	//No. of rows updated. 
+    	if(updateCount > 0)
     	{
-    		final String imageNameF = imageName;
-    		
-	    	new Thread(() -> {
-		    	
-	    		//Handle image base64 to url conversion and save on image server
-	    		Map<String, String> params = new HashMap<String, String>();
-	    		params.put("imagePath", "campaign_images/" + campaign.getId() + "/logo");
-	    		params.put("name", imageNameF);
-	    		params.put("base64String", VCImageUrl);
-	    		
-	    		Util.getWebResponse(Constant.BASE64STRINGTOIMAGESERVICE_URL, params, false);
-	        	
-		    }).start();
-    	}
+	    	//active status
+	    	if(ret[1] == 1)
+	    	{
+	    		Util.clearQuuRDSCache();
+	    	}
     	
-    	return id;
+	    	if(imageName != null)
+	    	{
+	    		final String imageNameF = imageName;
+	    		
+		    	new Thread(() -> {
+			    	
+		    		//Handle image base64 to url conversion and save on image server
+		    		Map<String, String> params = new HashMap<String, String>();
+		    		params.put("url", VCImageUrl);
+		    		params.put("imagePath", "campaign_images/" + campaign.getId() + "/logo");
+		    		params.put("name", imageNameF);
+		    			    		
+		    		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
+		        	
+			    }).start();
+	    	}
+    	}
+    	    	
+    	return updateCount;
     }
     
-    public int assignStationsCarts(CampaignStation campaignStation)
+    public String[] assignStationsCarts(CampaignStation campaignStation)
     {
-    	String station_ids = "";
+    	String station_ids = "", unpartneredStations = "";
     	
     	for(StationCart stationCart : campaignStation.getStationCartList()) 
     	{
@@ -105,22 +116,40 @@ public class CampaignService implements ICampaignService{
     		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
     		
     		Station station = Scheduler.StationMap.get(callLetters);
-    		station_ids += station.getId() + ",";
+    		
+    		//Partnered station
+    		if(station != null)
+    		{
+	    		station_ids += station.getId() + ",";
+	    		
+	    		//Insert in Marketron
+	    		campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", stationCart.getCartList()));
+    		}
+    		else
+    			unpartneredStations += callLetters + ",";
     	}
     	
     	if(!station_ids.isEmpty())
     	{
 	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
+	    	
+	    	//Assign stations to the campaign and activate. 
 	    	campaignDAO.assignStations(campaignStation.getId(), station_ids);
     	}
     	
-    	return -1;
+    	Util.clearQuuRDSCache();  //Clear cache
+    	
+    	return new String[]{unpartneredStations, null};
     }
     
     //In the SP we check if the id belongs to the Sky Item. Only then we delete.
     @Override
     public int deactivate(int id) {
         
-        return campaignDAO.deactivate(id);
+    	int ret = campaignDAO.deactivate(id);
+    	
+    	Util.clearQuuRDSCache();
+    	
+    	return ret;
     }
 }

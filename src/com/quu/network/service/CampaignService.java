@@ -109,6 +109,10 @@ public class CampaignService implements ICampaignService{
     @Override
     public int delete(int id) {
         
-        return campaignDAO.delete(id);
+    	int ret = campaignDAO.delete(id);  //TBD: call it delete and deactivate
+    	
+    	Util.clearQuuRDSCache();
+    	
+    	return ret;
     }
 }

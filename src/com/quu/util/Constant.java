@@ -19,7 +19,9 @@ public class Constant
     public static final String IMAGES_DIR_URL;
     public static final String IMAGES_DIR_URL_INSECURE;
     public static final String BASE64STRINGTOIMAGESERVICE_URL = "https://quuit.com/imageserver/image/saveBase64StringImage";
-    
+    public static final String IMAGEFROMURLSERVICE_URL = "http://quuit.com/imageserver/image/saveImageFromUrl";
+    public static final String RDSCAMPAIGNPREVIEWURL = "http://advertiserexperience.com/Quu2Go/Preview.aspx?campaign_type=BizRDS&campaign_id=";
+    	
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");

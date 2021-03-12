@@ -35,12 +35,12 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call CreateOrderAndRDSCampaignVC(?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call SaveOrderAndRDSCampaignVC(?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
     		st.setString(1, campaign.getAdvertiserName());
         	st.setString(2, campaign.getOrderName());
-        	st.setInt(3, campaign.getId());
+        	st.setInt(3, -1);
         	st.setString(4, campaign.getName());
             st.setString(5, campaign.getStartDate());
             st.setString(6, campaign.getEndDate());
@@ -49,6 +49,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
             st.setString(9, campaign.getImageUrl());
             st.setString(10, campaign.getEmail());
             st.registerOutParameter(11, Types.INTEGER);
+            st.registerOutParameter(12, Types.INTEGER);
             
             st.executeUpdate();
 	        
@@ -62,12 +63,11 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     	return -1;
     }
 	
-	//Only the columns of qb_campaign_rds can be updated. 
-	public int update(CampaignIn campaign)
+	public int[] update(CampaignIn campaign)
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call CreateOrderAndRDSCampaignVC(?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call SaveOrderAndRDSCampaignVC(?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
     		st.setString(1, campaign.getAdvertiserName());
@@ -80,18 +80,19 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
             st.setString(8, campaign.getLine2());
             st.setString(9, campaign.getImageUrl());
             st.setString(10, campaign.getEmail());
-            st.registerOutParameter(11, Types.INTEGER);
+            st.registerOutParameter(11, Types.INTEGER);  //This is the updated row count
+            st.registerOutParameter(12, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return st.getInt(11); //Same as id
+            return new int[] {st.getInt(11), st.getInt(12)}; 
         }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "VCreative:CampaignDAO update " + ex.getMessage());
         }
         
-    	return -1;
+    	return null;
     }
 	
 	public void assignStations(int id, String station_ids)
@@ -116,12 +117,11 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call DeleteNetworkCampaign(?,?)");
+    			CallableStatement st = conn.prepareCall("call DeactivateOrderAndRDSCampaignVC(?)");
 			)
         {
         	st.setInt(1, id);
-        	st.setInt(2, 4);  //RDS type
-        	
+        	        	
             return st.executeUpdate();
 	    }
         catch(SQLException ex)
@@ -130,5 +130,24 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
         }
 		
 		return -1;
+	}
+	
+	public void saveTraffic(int id, int station_id, String carts)
+	{
+		try(
+				Connection conn = getBusinessDBConnection();
+    			CallableStatement st = conn.prepareCall("call AssignStationsToCampaignVC(?,?)");
+			)
+        {
+        	st.setInt(1, id);
+        	st.setInt(2, station_id);
+        	st.setString(3, carts);
+        	
+            st.executeUpdate();
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStations " + ex.getMessage());
+        }
 	}
 }

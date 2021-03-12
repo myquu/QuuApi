@@ -15,7 +15,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.quu.util.Constant;
 import com.quu.vcreative.model.CampaignIn;
+import com.quu.vcreative.model.CampaignOut;
 import com.quu.vcreative.model.CampaignStation;
 import com.quu.vcreative.service.ICampaignService;
 
@@ -35,7 +37,9 @@ public class CampaignController {
 	{
 		int id = campaignService.add(campaign);
 		
-		return Response.status(Response.Status.OK).entity("{\"ID\":"+id+"}").build();
+		String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + id;
+		
+		return Response.status(Response.Status.OK).entity(new CampaignOut(campaign.getVC_POID(), id, previewUrl)).build();
 	}
 	
 	@PUT
@@ -46,7 +50,11 @@ public class CampaignController {
 		int count = campaignService.update(campaign);
 		
 		if(count > 0)
-			return Response.status(Response.Status.OK).entity("{\"ID\":"+campaign.getId()+"}").build();
+		{
+			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + campaign.getId();
+			
+			return Response.status(Response.Status.OK).entity(new CampaignOut(campaign.getVC_POID(), campaign.getId(), previewUrl)).build();
+		}
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
@@ -57,9 +65,9 @@ public class CampaignController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response assignStationsCarts(CampaignStation campaignStation)
 	{
-		int id = campaignService.assignStationsCarts(campaignStation);
+		String[] ret = campaignService.assignStationsCarts(campaignStation);
 		
-		return Response.status(Response.Status.OK).entity("{\"ID\":"+id+"}").build();
+		return Response.status(Response.Status.OK).entity(null).build();
 	}
 			
 	@DELETE

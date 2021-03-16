@@ -46,7 +46,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
             st.setString(6, campaign.getEndDate());
             st.setString(7, campaign.getLine1());
             st.setString(8, campaign.getLine2());
-            st.setString(9, campaign.getImageUrl());
+            st.setString(9, campaign.getImageName());
             st.setString(10, campaign.getEmail());
             st.registerOutParameter(11, Types.INTEGER);
             st.registerOutParameter(12, Types.INTEGER);
@@ -78,7 +78,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
             st.setString(6, campaign.getEndDate());
             st.setString(7, campaign.getLine1());
             st.setString(8, campaign.getLine2());
-            st.setString(9, campaign.getImageUrl());
+            st.setString(9, campaign.getImageName());
             st.setString(10, campaign.getEmail());
             st.registerOutParameter(11, Types.INTEGER);  //This is the updated row count
             st.registerOutParameter(12, Types.INTEGER);

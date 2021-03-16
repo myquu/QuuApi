@@ -32,8 +32,8 @@ public class CampaignIn {
 	@JsonProperty("VC_advertiser")
 	private String advertiserName;
 	
-	@JsonProperty("Q_Ad_ID")
-	private int orderId;
+	//@JsonProperty("Q_Ad_ID")
+	//private int orderId;
 	
 	@JsonProperty
 	private String VC_POID;

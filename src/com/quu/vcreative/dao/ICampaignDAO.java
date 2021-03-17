@@ -11,9 +11,11 @@ public interface ICampaignDAO {
 
     public int[] update(CampaignIn campaign);
 
-    public void assignStations(int id, String station_ids);
-    
     public int deactivate(int id);
+    
+    public int campaignExists(int id);
+    
+    public void assignStations(int id, String station_ids);
     
     public void saveTraffic(int id, int station_id, String carts);
 	

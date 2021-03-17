@@ -1,7 +1,5 @@
 package com.quu.vcreative.model;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -13,12 +11,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class CampaignStation {
+public class CampaignStationOut {
 
-	@JsonProperty("Q_Campaign_ID")
-	private int id;
-	
-	@JsonProperty("VC_station_cartID")
-	private List<StationCart> stationCartList;
+	@JsonProperty("Q_station_not_enabled")
+	private String stationsNotEnabled;
+	@JsonProperty("Q_station_req_approval")
+	private String stationsReqApproval;
 	
 }

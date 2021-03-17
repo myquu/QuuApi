@@ -5,19 +5,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.enterprise.context.RequestScoped;
 
 import com.quu.dao.BaseDAO;
 import com.quu.vcreative.model.CampaignIn;
-import com.quu.vcreative.model.CampaignStation;
-import com.quu.util.Constant;
 
 
 //TBD: Add a way to return error messages to the controller.
@@ -95,24 +88,6 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     	return null;
     }
 	
-	public void assignStations(int id, String station_ids)
-	{
-		try(
-				Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call AssignStationsToCampaignVC(?,?)");
-			)
-        {
-        	st.setInt(1, id);
-        	st.setString(2, station_ids);
-        	
-            st.executeUpdate();
-	    }
-        catch(SQLException ex)
-        {
-        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStations " + ex.getMessage());
-        }
-	}
-	
 	public int deactivate(int id)
 	{
 		try(
@@ -132,7 +107,31 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		return -1;
 	}
 	
-	public void saveTraffic(int id, int station_id, String carts)
+	//Checks if the id belongs to a campaign that was created via VC API call.
+	public int campaignExists(int id)
+	{
+		try(
+				Connection conn = getBusinessDBConnection();
+    			PreparedStatement st = conn.prepareStatement("select 1 from qb_campaigns_new where id = ? and source = 'VC'");
+			)
+        {
+        	st.setInt(1, id);
+        	        	
+        	try(ResultSet rs = st.executeQuery();)
+	        {
+		        if(rs.next())
+		            return 1;
+	        }
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO delete " + ex.getMessage());
+        }
+		
+		return -1;
+	}
+	
+	public void assignStations(int id, String station_ids)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
@@ -140,14 +139,32 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 			)
         {
         	st.setInt(1, id);
-        	st.setInt(2, station_id);
-        	st.setString(3, carts);
+        	st.setString(2, station_ids);
         	
             st.executeUpdate();
 	    }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStations " + ex.getMessage());
+        }
+	}
+	
+	public void saveTraffic(int id, int station_id, String carts)
+	{
+		try(
+				Connection conn = getBusinessDBConnection();
+    			CallableStatement st = conn.prepareCall("call SaveTrafficDataVC(?,?,?)");
+			)
+        {
+        	st.setInt(1, id);
+        	st.setInt(2, station_id);
+        	st.setString(3, carts);
+        	        	
+            st.executeUpdate();
+        }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO SaveTrafficDataVC " + ex.getMessage());
         }
 	}
 }

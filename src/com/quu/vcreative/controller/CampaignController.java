@@ -18,7 +18,8 @@ import javax.ws.rs.core.Response;
 import com.quu.util.Constant;
 import com.quu.vcreative.model.CampaignIn;
 import com.quu.vcreative.model.CampaignOut;
-import com.quu.vcreative.model.CampaignStation;
+import com.quu.vcreative.model.CampaignStationIn;
+import com.quu.vcreative.model.CampaignStationOut;
 import com.quu.vcreative.service.ICampaignService;
 
 
@@ -63,11 +64,13 @@ public class CampaignController {
 	@Path("/assign")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response assignStationsCarts(CampaignStation campaignStation)
+	public Response assignStationsCarts(CampaignStationIn campaignStation)
 	{
 		String[] ret = campaignService.assignStationsCarts(campaignStation);
 		
-		return Response.status(Response.Status.OK).entity(null).build();
+		CampaignStationOut res = new CampaignStationOut(ret[0], ret[1]); 
+		
+		return Response.status(Response.Status.OK).entity(res).build();
 	}
 			
 	@DELETE

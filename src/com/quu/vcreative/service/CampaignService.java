@@ -1,5 +1,6 @@
 package com.quu.vcreative.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import javax.inject.Inject;
 
 import com.quu.vcreative.dao.ICampaignDAO;
 import com.quu.vcreative.model.CampaignIn;
-import com.quu.vcreative.model.CampaignStation;
+import com.quu.vcreative.model.CampaignStationIn;
 import com.quu.vcreative.model.StationCart;
 import com.quu.model.Station;
 import com.quu.util.Constant;
@@ -106,38 +107,47 @@ public class CampaignService implements ICampaignService{
     	return updateCount;
     }
     
-    public String[] assignStationsCarts(CampaignStation campaignStation)
+    public String[] assignStationsCarts(CampaignStationIn campaignStation)
     {
     	String station_ids = "", unpartneredStations = "";
     	
-    	for(StationCart stationCart : campaignStation.getStationCartList()) 
+    	int ret = campaignDAO.campaignExists(campaignStation.getId());
+    	
+    	if(ret == 1)
     	{
-    		String callLetters = stationCart.getStation();
-    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
-    		
-    		Station station = Scheduler.StationMap.get(callLetters);
-    		
-    		//Partnered station
-    		if(station != null)
-    		{
-	    		station_ids += station.getId() + ",";
+	    	for(StationCart stationCart : campaignStation.getStationCartList()) 
+	    	{
+	    		String callLetters = stationCart.getStation();
+	    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
 	    		
-	    		//Insert in Marketron
-	    		campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", stationCart.getCartList()));
-    		}
-    		else
-    			unpartneredStations += callLetters + ",";
-    	}
-    	
-    	if(!station_ids.isEmpty())
-    	{
-	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
+	    		Station station = Scheduler.StationMap.get(callLetters);
+	    		
+	    		//Partnered station
+	    		if(station != null)
+	    		{
+		    		station_ids += station.getId() + ",";
+		    		
+		    		List<String> cartList = new ArrayList<String>();  
+		    		//Delete all non numeric characters from carts
+		    		stationCart.getCartList().forEach(cart -> cartList.add(cart.replaceAll("\\D", "")));
+		    		
+		    		//Insert in Marketron
+		    		campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
+	    		}
+	    		else
+	    			unpartneredStations += callLetters + ",";
+	    	}
 	    	
-	    	//Assign stations to the campaign and activate. 
-	    	campaignDAO.assignStations(campaignStation.getId(), station_ids);
+	    	if(!station_ids.isEmpty())
+	    	{
+		    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
+		    	
+		    	//Assign stations to the campaign and activate. 
+		    	campaignDAO.assignStations(campaignStation.getId(), station_ids);
+	    	}
+	    	
+	    	Util.clearQuuRDSCache();  //Clear cache
     	}
-    	
-    	Util.clearQuuRDSCache();  //Clear cache
     	
     	return new String[]{unpartneredStations, null};
     }

@@ -28,6 +28,9 @@ import com.quu.network.model.Schedule;
 @RequestScoped
 public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 
+	private static final int ITEM_ID = 9111;
+	private static final int USER_ID = 1197;
+	
 	public List<Schedule> getAll()
     {
     	try(
@@ -138,24 +141,24 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
     }
 	*/
 	
-	public int add(Schedule schedule)
+	public int add(String jsonS, int StationID, String CampaignIDs)
     {
     	try(
     			Connection conn = getNetworkDBConnection();
-    			PreparedStatement st = conn.prepareStatement("insert into schedules(value) values(?)", Statement.RETURN_GENERATED_KEYS);
+    			CallableStatement st = conn.prepareCall("call SaveSchedule(?,?,?,?,?,?,?)");
 			)
         {
-    		st.setString(1, schedule.getValue());
-        	        	            
+    		st.setInt(1, -1);
+    		st.setString(2, jsonS);
+    		st.setInt(3, ITEM_ID);
+    		st.setString(4, CampaignIDs);
+    		st.setInt(5, StationID);
+    		st.setInt(6, USER_ID);
+    		st.registerOutParameter(7, Types.INTEGER);
+    		
             st.executeUpdate();
 	        
-            try(ResultSet rs = st.getGeneratedKeys();)
-    		{
-		        if(rs.next())
-		        {
-		        	return rs.getInt(1); 
-		        }
-    		} 
+            return st.getInt(7); 
 		}
         catch(SQLException ex)
         {
@@ -165,17 +168,24 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
     	return -1;
     }
 	
-	public int update(Schedule schedule)
+	public int update(int id, String jsonS, int StationID, String CampaignIDs)
     {
     	try(
     			Connection conn = getNetworkDBConnection();
-    			PreparedStatement st = conn.prepareStatement("update schedules set value = ? where id = ?");
+    			CallableStatement st = conn.prepareCall("call SaveSchedule(?,?,?,?,?,?,?)");
 			)
         {
-    		st.setString(1, schedule.getValue());
-            st.setInt(2, schedule.getId());
-            
-            return st.executeUpdate();
+    		st.setInt(1, id);
+    		st.setString(2, jsonS);
+    		st.setInt(3, ITEM_ID);
+    		st.setString(4, CampaignIDs);
+    		st.setInt(5, StationID);
+    		st.setInt(6, USER_ID);
+    		st.registerOutParameter(7, Types.INTEGER);
+    		
+            st.executeUpdate();
+	        
+            return st.getInt(7);
         }
         catch(SQLException ex)
         {
@@ -185,7 +195,7 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
     	return -1;
     }
 	
-	public boolean delete(int id)
+	public int delete(int id)
 	{
 		try(
 				Connection conn = getNetworkDBConnection();
@@ -194,45 +204,14 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
         {
         	st.setInt(1, id);
                                     
-            st.executeUpdate();
-	        
-            return true;
-        }
+        	return st.executeUpdate();
+	    }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "SkyviewApp:ScheduleDAO delete " + ex.getMessage());
         }
 		
-		return false;
+		return -1;
 	}
-	
-	/*
-	private int saveEvent(Event event)
-    {
-    	try(
-    			Connection conn = getSkyviewDBConnection();
-    			PreparedStatement st = conn.prepareStatement("insert into break(campaignId, date) values(?,?)", Statement.RETURN_GENERATED_KEYS);
-			)
-        {
-    		st.setInt(1, event.getCampaignID());
-    		st.setString(2, event.getDate());
-                                    
-            st.executeUpdate();
-	        
-            try(ResultSet rs = st.getGeneratedKeys();)
-    		{
-		        if(rs.next())
-		        {
-		        	return rs.getInt(1); 
-		        }
-    		}
-        }
-        catch(SQLException ex)
-        {
-        	System.out.println(new java.util.Date() + "SkyviewApp:ScheduleDAO saveBreak " + ex.getMessage());
-        }
-        
-    	return -1;
-    }
-    */
+		
 }

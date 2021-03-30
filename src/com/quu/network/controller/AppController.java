@@ -16,6 +16,7 @@ public class AppController extends Application {
 		Set<Class<?>> resources = new HashSet<>();
         
 		resources.add(CampaignController.class);
+		resources.add(ScheduleController.class);
 		resources.add(TriggerController.class);
 		
         return resources;

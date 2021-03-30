@@ -15,10 +15,10 @@ public interface IScheduleService {
 
 	public Schedule get(int id);	
 	
-    public int add(Schedule schedule);
+    public int add(String jsonS, int StationID, String CampaignIDs);
 
-    public int update(Schedule schedule);
+    public int update(int id, String jsonS, int StationID, String CampaignIDs);
     
-    public boolean delete(int id);
+    public int delete(int id);
 	
 }

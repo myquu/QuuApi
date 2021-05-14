@@ -44,17 +44,7 @@ public class CampaignService implements ICampaignService{
     	{
     		final String imageNameF = imageName;
     		
-	    	new Thread(() -> {
-		    	
-	    		//Handle image base64 to url conversion and save on image server
-	    		Map<String, String> params = new HashMap<String, String>();
-	    		params.put("url", VCImageUrl);
-	    		params.put("imagePath", "campaign_images/" + id + "/logo");
-	    		params.put("name", imageNameF);
-	    			        	
-	    		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
-	        	
-		    }).start();
+	    	new Thread(() -> saveImageOnImageserver(VCImageUrl, id, imageNameF)).start();
     	}
     	
     	return id;
@@ -90,23 +80,44 @@ public class CampaignService implements ICampaignService{
 	    	{
 	    		final String imageNameF = imageName;
 	    		
-		    	new Thread(() -> {
-			    	
-		    		//Handle image base64 to url conversion and save on image server
-		    		Map<String, String> params = new HashMap<String, String>();
-		    		params.put("url", VCImageUrl);
-		    		params.put("imagePath", "campaign_images/" + campaign.getId() + "/logo");
-		    		params.put("name", imageNameF);
-		    			    		
-		    		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
-		        	
-			    }).start();
+	    		new Thread(() -> saveImageOnImageserver(VCImageUrl, campaign.getId(), imageNameF)).start();
 	    	}
     	}
     	    	
     	return updateCount;
     }
     
+    //Assigns an image to a campaign. 
+    @Override
+    public int assignImage(CampaignIn campaign) {
+        
+    	String VCImageUrl = campaign.getImageUrl(),
+			imageName = VCImageUrl.substring(VCImageUrl.lastIndexOf("/")+1);
+    	
+    	campaign.setImageName(imageName);
+    	    	
+    	int[] ret = campaignDAO.assignImage(campaign);
+    	
+    	int updateCount = ret[0];
+    	
+    	//No. of rows updated. 
+    	if(updateCount > 0)
+    	{
+	    	//active status
+	    	if(ret[1] == 1)
+	    	{
+	    		Util.clearQuuRDSCache();
+	    	}
+    		    	
+    		final String imageNameF = imageName;
+    		
+    		new Thread(() -> saveImageOnImageserver(VCImageUrl, campaign.getId(), imageNameF)).start();
+	    }
+    	    	
+    	return updateCount;
+    }
+    
+    //This method assigns stations to the campaign and adds the carts in Marketron.
     public String[] assignStationsCarts(CampaignStationIn campaignStation)
     {
     	String station_ids = "", unpartneredStations = "";
@@ -162,4 +173,17 @@ public class CampaignService implements ICampaignService{
     	
     	return ret;
     }
+    
+    
+    private void saveImageOnImageserver(String VCImageUrl, int id, String imageNameF)
+    {
+    	//Handle image base64 to url conversion and save on image server
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("url", VCImageUrl);
+		params.put("imagePath", "campaign_images/" + id + "/logo");
+		params.put("name", imageNameF);
+			    		
+		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
+    }
+    
 }

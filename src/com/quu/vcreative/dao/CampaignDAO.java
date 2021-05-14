@@ -131,6 +131,30 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		return -1;
 	}
 	
+	public int[] assignImage(CampaignIn campaign)
+    {
+    	try(
+    			Connection conn = getBusinessDBConnection();
+    			CallableStatement st = conn.prepareCall("call AssignImageToCampaignVC(?,?,?,?)");
+			)
+        {
+    		st.setInt(1, campaign.getId());
+        	st.setString(2, campaign.getImageName());
+            st.registerOutParameter(3, Types.INTEGER);  //This is the updated row count
+            st.registerOutParameter(4, Types.INTEGER);
+            
+            st.executeUpdate();
+	        
+            return new int[] {st.getInt(3), st.getInt(4)}; 
+        }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignImage " + ex.getMessage());
+        }
+        
+    	return null;
+    }
+	
 	public void assignStations(int id, String station_ids)
 	{
 		try(

@@ -12,6 +12,8 @@ public interface ICampaignService {
 
     public int update(CampaignIn campaign);
     
+    public int assignImage(CampaignIn campaign);
+    
     public String[] assignStationsCarts(CampaignStationIn campaignStation);
     
     public int deactivate(int id);

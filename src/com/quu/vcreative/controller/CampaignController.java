@@ -61,6 +61,24 @@ public class CampaignController {
 	}
 	
 	@POST
+	@Path("/assignImage")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response assignImage(CampaignIn campaign)
+	{
+		int count = campaignService.assignImage(campaign);
+		
+		if(count > 0)
+		{
+			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + campaign.getId();
+			
+			return Response.status(Response.Status.OK).entity(new CampaignOut(null, campaign.getId(), previewUrl)).build();
+		}
+		else
+			return Response.status(Response.Status.NO_CONTENT).build();
+	}
+	
+	@POST
 	@Path("/assign")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -85,5 +103,5 @@ public class CampaignController {
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
-	
+
 }

@@ -15,6 +15,8 @@ public interface ICampaignDAO {
     
     public int campaignExists(int id);
     
+    public int[] assignImage(CampaignIn campaign);
+    
     public void assignStations(int id, String station_ids);
     
     public void saveTraffic(int id, int station_id, String carts);

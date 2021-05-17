@@ -25,7 +25,7 @@ import lombok.Setter;
 
 public class CampaignOut {
 
-	@JsonProperty
+	@JsonProperty("VC_POID")
 	private String VC_POID;
 	
 	//@JsonProperty("Q_Ad_ID")

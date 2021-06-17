@@ -20,6 +20,9 @@ import com.quu.vcreative.model.CampaignIn;
 import com.quu.vcreative.model.CampaignOut;
 import com.quu.vcreative.model.CampaignStationIn;
 import com.quu.vcreative.model.CampaignStationOut;
+import com.quu.vcreative.model.ImageIn;
+import com.quu.vcreative.model.LineItemIn;
+import com.quu.vcreative.model.LineItemOut;
 import com.quu.vcreative.service.ICampaignService;
 
 
@@ -30,49 +33,35 @@ public class CampaignController {
 	@Inject
     private ICampaignService campaignService;
 		
-	
+	//Response.Status.NO_CONTENT is not possible here. We create is not found and update if found.
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response add(CampaignIn campaign)
+	public Response save(CampaignIn campaignIn)
 	{
-		int id = campaignService.add(campaign);
+		CampaignOut campaignOut = campaignService.save(campaignIn);
 		
-		String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + id;
+		List<LineItemOut> lineItemOuts = campaignOut.getLineItems();
 		
-		return Response.status(Response.Status.OK).entity(new CampaignOut(campaign.getVC_POID(), id, previewUrl)).build();
-	}
-	
-	@PUT
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response update(CampaignIn campaign)
-	{
-		int count = campaignService.update(campaign);
-		
-		if(count > 0)
-		{
-			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + campaign.getId();
-			
-			return Response.status(Response.Status.OK).entity(new CampaignOut(campaign.getVC_POID(), campaign.getId(), previewUrl)).build();
-		}
+		if(lineItemOuts != null && !lineItemOuts.isEmpty())
+			return Response.status(Response.Status.OK).entity(campaignOut).build();
 		else
-			return Response.status(Response.Status.NO_CONTENT).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	}
 	
 	@POST
 	@Path("/assignImage")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response assignImage(CampaignIn campaign)
+	public Response assignImage(ImageIn imageIn)
 	{
-		int count = campaignService.assignImage(campaign);
+		int found = campaignService.assignImage(imageIn);
 		
-		if(count > 0)
+		if(found == 1)
 		{
-			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + campaign.getId();
+			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + imageIn.getId();
 			
-			return Response.status(Response.Status.OK).entity(new CampaignOut(null, campaign.getId(), previewUrl)).build();
+			return Response.status(Response.Status.OK).entity(new LineItemOut(imageIn.getVC_LineItem_ID(), imageIn.getId(), previewUrl)).build();
 		}
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();

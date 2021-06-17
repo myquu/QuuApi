@@ -21,4 +21,6 @@ public class StationCart {
 	@JsonProperty("carts")
 	private List<String> cartList;
 	
+	//This is not passed from controller. Its used internally
+	private int stationId;
 }

@@ -1,5 +1,7 @@
 package com.quu.vcreative.model;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -28,20 +30,7 @@ public class CampaignOut {
 	@JsonProperty("VC_POID")
 	private String VC_POID;
 	
-	//@JsonProperty("Q_Ad_ID")
-	//private int orderId;
-	
-	@JsonProperty("Q_Campaign_ID")
-	private int id;  //Line item id
-	
-	@JsonProperty("Q_Ad_URL")
-	private String previewUrl;
-	
-	/* These will be in the response from assign
-	@JsonProperty("Q_station_not_enabled")
-	private String stationsNotEnabled;
-	
-	@JsonProperty("Q_station_req_approval")
-	private String stationsReqApproval;
-	*/
+	@JsonProperty("LineItems")
+	private List<LineItemOut> lineItems;
+		
 }

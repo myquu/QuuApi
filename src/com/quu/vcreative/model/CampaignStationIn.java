@@ -15,7 +15,10 @@ import lombok.Setter;
 @Setter
 public class CampaignStationIn {
 
-	@JsonProperty("Q_Campaign_ID")
+	@JsonProperty
+	private String VC_POID;
+	
+	@JsonProperty("Q_LineItem_ID")
 	private int id;
 	
 	@JsonProperty("VC_station_cartID")

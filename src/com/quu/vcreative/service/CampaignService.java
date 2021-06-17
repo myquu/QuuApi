@@ -10,7 +10,12 @@ import javax.inject.Inject;
 
 import com.quu.vcreative.dao.ICampaignDAO;
 import com.quu.vcreative.model.CampaignIn;
+import com.quu.vcreative.model.CampaignOut;
+import com.quu.vcreative.model.CampaignStationDetail;
 import com.quu.vcreative.model.CampaignStationIn;
+import com.quu.vcreative.model.ImageIn;
+import com.quu.vcreative.model.LineItemIn;
+import com.quu.vcreative.model.LineItemOut;
 import com.quu.vcreative.model.StationCart;
 import com.quu.model.Station;
 import com.quu.util.Constant;
@@ -25,83 +30,83 @@ public class CampaignService implements ICampaignService{
     private ICampaignDAO campaignDAO;
 		
 
-    //Creates a new campaign. 
+    //Handles both add and edit of an Order and line items inside it. 
     @Override
-    public int add(CampaignIn campaign) {
+    public CampaignOut save(CampaignIn campaignIn) {
         
-    	String imageName = null;
-    	String VCImageUrl = campaign.getImageUrl();
+    	CampaignOut campaignOut = new CampaignOut();
+    	campaignOut.setVC_POID(campaignIn.getVC_POID());
     	
-    	if(VCImageUrl != null)
+    	int itemId = campaignDAO.saveOrder(campaignIn);
+    	
+    	if(itemId != -1)
     	{
-    		imageName = VCImageUrl.substring(VCImageUrl.lastIndexOf("/")+1);
-    		campaign.setImageName(imageName);
-    	}
-    	
-    	int id = campaignDAO.add(campaign);
-    	
-    	if(imageName != null)
-    	{
-    		final String imageNameF = imageName;
+    		boolean anyActive = false;
     		
-	    	new Thread(() -> saveImageOnImageserver(VCImageUrl, id, imageNameF)).start();
+    		List<LineItemOut> lineItemOuts = new ArrayList<LineItemOut>(); 
+    		
+    		for(LineItemIn lineItemIn : campaignIn.getLineItems())
+    		{
+    			String VCImageUrl = lineItemIn.getImageUrl();
+    			String imageName = null;
+    			
+    			if(VCImageUrl != null)
+	        	{
+	        		imageName = VCImageUrl.substring(VCImageUrl.lastIndexOf("/")+1);
+	        		lineItemIn.setImageName(imageName);
+	        	}
+    			
+	    		int[] ret = campaignDAO.saveLineItem(itemId, lineItemIn);
+	    		
+	    		if(ret != null)
+	    		{
+	    			int lineItemId = ret[0],
+        				active = ret[1];
+	    			
+	    			if(active == 1)
+	    			{
+	    				anyActive = true;
+	    			}
+	    			
+	    			if(imageName != null)
+	    	    	{
+	    	    		final String imageNameF = imageName;
+	    	    		
+	    	    		new Thread(() -> saveImageOnImageserver(VCImageUrl, lineItemId, imageNameF)).start();
+	    	    	}
+	    			
+	    			lineItemOuts.add(new LineItemOut(lineItemIn.getVC_LineItem_ID(), lineItemId, (Constant.RDSCAMPAIGNPREVIEWURL + lineItemId)));
+		        }
+    		}
+    		
+    		campaignOut.setLineItems(lineItemOuts);
+    		
+    		//If any line item is active clear the cache.
+    		if(anyActive)
+    		{
+    			Util.clearQuuRDSCache();
+    		}
     	}
     	
-    	return id;
+    	return campaignOut;
     }
 
-    //Updates a campaign. 
-    @Override
-    public int update(CampaignIn campaign) {
         
-    	String imageName = null;
-    	String VCImageUrl = campaign.getImageUrl();
-    	
-    	if(VCImageUrl != null)
-    	{
-    		imageName = VCImageUrl.substring(VCImageUrl.lastIndexOf("/")+1);
-    		campaign.setImageName(imageName);
-    	}
-    	
-    	int[] ret = campaignDAO.update(campaign);
-    	
-    	int updateCount = ret[0];
-    	
-    	//No. of rows updated. 
-    	if(updateCount > 0)
-    	{
-	    	//active status
-	    	if(ret[1] == 1)
-	    	{
-	    		Util.clearQuuRDSCache();
-	    	}
-    	
-	    	if(imageName != null)
-	    	{
-	    		final String imageNameF = imageName;
-	    		
-	    		new Thread(() -> saveImageOnImageserver(VCImageUrl, campaign.getId(), imageNameF)).start();
-	    	}
-    	}
-    	    	
-    	return updateCount;
-    }
-    
-    //Assigns an image to a campaign. 
+    //Updates the image field of a line item. 
     @Override
-    public int assignImage(CampaignIn campaign) {
+    public int assignImage(ImageIn imageIn) {
         
-    	String VCImageUrl = campaign.getImageUrl(),
+    	String VCImageUrl = imageIn.getImageUrl(),
 			imageName = VCImageUrl.substring(VCImageUrl.lastIndexOf("/")+1);
     	
-    	campaign.setImageName(imageName);
+    	imageIn.setImageName(imageName);
     	    	
-    	int[] ret = campaignDAO.assignImage(campaign);
+    	int[] ret = campaignDAO.assignImage(imageIn);
     	
-    	int updateCount = ret[0];
+    	int found = ret[0]; 
     	
-    	//No. of rows updated. 
-    	if(updateCount > 0)
+    	//If line item belongs to a VC Order. 
+    	if(found == 1)
     	{
 	    	//active status
 	    	if(ret[1] == 1)
@@ -111,55 +116,72 @@ public class CampaignService implements ICampaignService{
     		    	
     		final String imageNameF = imageName;
     		
-    		new Thread(() -> saveImageOnImageserver(VCImageUrl, campaign.getId(), imageNameF)).start();
+    		new Thread(() -> saveImageOnImageserver(VCImageUrl, imageIn.getId(), imageNameF)).start();
 	    }
     	    	
-    	return updateCount;
+    	return found;
     }
     
-    //This method assigns stations to the campaign and adds the carts in Marketron.
+    //This method assigns stations to the campaign and adds specific carts to each station.
     public String[] assignStationsCarts(CampaignStationIn campaignStation)
     {
     	String station_ids = "", unpartneredStations = "";
     	
-    	int ret = campaignDAO.campaignExists(campaignStation.getId());
-    	
-    	if(ret == 1)
+    	List<StationCart> partneredStationCartList = new ArrayList<>();  
+		    		
+    	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
     	{
-	    	for(StationCart stationCart : campaignStation.getStationCartList()) 
-	    	{
-	    		String callLetters = stationCart.getStation();
-	    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
+    		String callLetters = stationCarts.getStation();
+    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
+    		
+    		Station station = Scheduler.StationMap.get(callLetters);
+    		
+    		//Partnered station
+    		if(station != null)
+    		{
+    			station_ids += station.getId() + ",";
 	    		
-	    		Station station = Scheduler.StationMap.get(callLetters);
-	    		
-	    		//Partnered station
-	    		if(station != null)
-	    		{
-		    		station_ids += station.getId() + ",";
-		    		
-		    		List<String> cartList = new ArrayList<String>();  
-		    		//Delete all non numeric characters from carts
-		    		stationCart.getCartList().forEach(cart -> cartList.add(cart.replaceAll("\\D", "")));
-		    		
-		    		//Insert in Marketron
-		    		campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
-	    		}
-	    		else
-	    			unpartneredStations += callLetters + ",";
-	    	}
-	    	
-	    	if(!station_ids.isEmpty())
-	    	{
-		    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
-		    	
-		    	//Assign stations to the campaign and activate. 
-		    	campaignDAO.assignStations(campaignStation.getId(), station_ids);
-	    	}
-	    	
-	    	Util.clearQuuRDSCache();  //Clear cache
+	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), station.getId()));
+	    		//campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
+    		}
+    		else
+    		{
+    			unpartneredStations += callLetters + ",";
+    		}
     	}
     	
+    	//If there are partnered stations
+    	if(!station_ids.isEmpty())
+    	{
+	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
+	    	
+	    	/*The below call
+	    	 * 1. Updates the advertiser(if needed)
+	    	 * 2. Assigns new stations to the advertiser(if needed). 
+	    	 * 3. Deletes all station assignments and add anew to the campaign.
+	    	 * 4. Deletes existing rdo campaigns and its spots.
+	    	 * 5. Sets the order and campaign to active.
+	    	 * Returns the status, advertiser id, item id, start date and end date for use later.
+	    	 */
+	    	CampaignStationDetail detail = campaignDAO.assignStations(campaignStation.getVC_POID(), campaignStation.getId(), station_ids);
+	    	
+	    	//If its a VC campaign
+	    	if(detail.getStatus() == 1)
+	    	{
+	    		for(StationCart stationCarts : partneredStationCartList)
+	    		{
+	    			List<String> scrubbedCartList = new ArrayList<String>();  
+		    		
+	    			//Delete all non numeric characters from carts
+		    		stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
+	    			
+	    			campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), String.join(",", scrubbedCartList));
+	    		}
+	    	}
+    	}
+    	
+    	Util.clearQuuRDSCache();  //Clear cache
+    	    	
     	return new String[]{unpartneredStations, null};
     }
     

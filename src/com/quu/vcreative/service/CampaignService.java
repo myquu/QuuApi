@@ -125,6 +125,8 @@ public class CampaignService implements ICampaignService{
     //This method assigns stations to the campaign and adds specific carts to each station.
     public String[] assignStationsCarts(CampaignStationIn campaignStation)
     {
+    	String status = "0"; //Invalid PO id or line item id
+    	
     	String station_ids = "", unpartneredStations = "";
     	
     	List<StationCart> partneredStationCartList = new ArrayList<>();  
@@ -177,12 +179,14 @@ public class CampaignService implements ICampaignService{
 	    			
 	    			campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), String.join(",", scrubbedCartList));
 	    		}
+	    		
+	    		status = "1";
+	    		
+	    		Util.clearQuuRDSCache();  //Clear cache
 	    	}
-    	}
+	    }
     	
-    	Util.clearQuuRDSCache();  //Clear cache
-    	    	
-    	return new String[]{unpartneredStations, null};
+    	return new String[]{status, unpartneredStations};
     }
     
     //In the SP we check if the id belongs to the Sky Item. Only then we delete.

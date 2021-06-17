@@ -75,9 +75,12 @@ public class CampaignController {
 	{
 		String[] ret = campaignService.assignStationsCarts(campaignStation);
 		
-		CampaignStationOut res = new CampaignStationOut(ret[0], ret[1]); 
+		CampaignStationOut res = new CampaignStationOut(ret[1], null); 
 		
-		return Response.status(Response.Status.OK).entity(res).build();
+		if(ret[0] == "1")
+			return Response.status(Response.Status.OK).entity(res).build();
+		else
+			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 			
 	@DELETE

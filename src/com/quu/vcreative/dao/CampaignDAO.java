@@ -78,16 +78,20 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     	return null;
     }
 	
-	public int deactivate(int id)
+	public int deactivate(String POID, int id)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call DeactivateOrderAndRDSCampaignVC(?)");
+    			CallableStatement st = conn.prepareCall("call DeactivateOrderAndRDSCampaignVC(?,?,?)");
 			)
         {
-        	st.setInt(1, id);
-        	        	
-            return st.executeUpdate();
+			st.setString(1, POID);
+        	st.setInt(2, id);
+        	st.registerOutParameter(3, Types.INTEGER);  //1 - exists. 0 - Does not exist
+        	
+            st.executeUpdate();
+            
+            return st.getInt(3);
 	    }
         catch(SQLException ex)
         {
@@ -97,17 +101,18 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		return -1;
 	}
 	
-	//NOT IN USE
-	//Checks if the id belongs to a campaign that was created via VC API call.
-	public int campaignExists(int id)
+	//Checks if the POID maps to an Order that was created via VC API call.
+	public int campaignExists(String POID, int id)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select 1 from qb_campaigns_new where id = ? and source = 'VC'");
+    			PreparedStatement st = conn.prepareStatement("select 1 from vcreative.PO_item_mapping m " +
+    					"join qb_campaigns_new c on(m.item_id = c.item_id) where PO_id = ? and c.id = ?");
 			)
         {
-        	st.setInt(1, id);
-        	        	
+        	st.setString(1, POID);
+        	st.setInt(2, id);
+        	
         	try(ResultSet rs = st.executeQuery();)
 	        {
 		        if(rs.next())
@@ -116,7 +121,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	    }
         catch(SQLException ex)
         {
-        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO delete " + ex.getMessage());
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO campaignExists " + ex.getMessage());
         }
 		
 		return -1;
@@ -195,6 +200,27 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStationCarts " + ex.getMessage());
+        }
+			
+	}
+	
+	public void deleteStationsCarts(String POID, int id, int stationId, String carts)
+	{
+		try(
+				Connection conn = getBusinessDBConnection();
+    			CallableStatement st = conn.prepareCall("call DeleteStationsCartsFromCampaignVC(?,?,?,?)");
+			)
+        {
+			st.setString(1, POID);
+			st.setInt(2, id);
+        	st.setInt(3, stationId);
+        	st.setString(4, carts);
+        	
+            st.executeUpdate();
+        }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO deleteStationsCarts " + ex.getMessage());
         }
 			
 	}

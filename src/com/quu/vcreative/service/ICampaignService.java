@@ -17,6 +17,8 @@ public interface ICampaignService {
     
     public String[] assignStationsCarts(CampaignStationIn campaignStation);
     
-    public int deactivate(int id);
+    public String[] deleteStationsCarts(CampaignStationIn campaignStation);
+    
+    public int deactivate(String POID, int id);
 	
 }

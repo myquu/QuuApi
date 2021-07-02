@@ -14,15 +14,17 @@ public interface ICampaignDAO {
 
 	public int[] saveLineItem(int itemId, LineItemIn lineItem);
 	
-    public int deactivate(int id);
+    public int deactivate(String POID, int id);
     
-    public int campaignExists(int id);
+    public int campaignExists(String POID, int id);
     
     public int[] assignImage(ImageIn imageIn);
     
     public CampaignStationDetail assignStations(String POID, int id, String station_ids);
     
     public void assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String carts);
+    
+    public void deleteStationsCarts(String POID, int id, int stationId, String carts);
     
     public void saveTraffic(int id, int station_id, String carts);
 	

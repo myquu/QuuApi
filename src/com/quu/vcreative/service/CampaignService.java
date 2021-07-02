@@ -148,7 +148,7 @@ public class CampaignService implements ICampaignService{
     		}
     		else
     		{
-    			unpartneredStations += callLetters + ",";
+    			unpartneredStations += stationCarts.getStation() + ",";
     		}
     	}
     	
@@ -189,11 +189,52 @@ public class CampaignService implements ICampaignService{
     	return new String[]{status, unpartneredStations};
     }
     
-    //In the SP we check if the id belongs to the Sky Item. Only then we delete.
-    @Override
-    public int deactivate(int id) {
+    //This method deletes carts from stations within a line item.
+    public String[] deleteStationsCarts(CampaignStationIn campaignStation)
+    {
+    	String status = "0"; //Invalid PO id or line item id
+    	
+    	String unpartneredStations = "";
+    	
+    	int ret = campaignDAO.campaignExists(campaignStation.getVC_POID(), campaignStation.getId());
+    	
+    	//If its a VC campaign
+    	if(ret == 1)
+    	{
+	    	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
+	    	{
+	    		String callLetters = stationCarts.getStation();
+	    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
+	    		
+	    		Station station = Scheduler.StationMap.get(callLetters);
+	    		
+	    		//Partnered station
+	    		if(station != null)
+	    		{
+	    			List<String> scrubbedCartList = new ArrayList<String>();  
+		    		
+	    			//Delete all non numeric characters from carts
+		    		stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
+	    			
+	    			campaignDAO.deleteStationsCarts(campaignStation.getVC_POID(), campaignStation.getId(), station.getId(), String.join(",", scrubbedCartList));
+		    	}
+	    		else
+	    		{
+	    			unpartneredStations += stationCarts.getStation() + ",";
+	    		}
+	    	}
+	    	
+	    	status = "1";
+    		
+    		Util.clearQuuRDSCache();  //Clear cache
+    	}
+    	
+    	return new String[]{status, unpartneredStations};
+    }
+    
+    public int deactivate(String POID, int id) {
         
-    	int ret = campaignDAO.deactivate(id);
+    	int ret = campaignDAO.deactivate(POID, id);
     	
     	Util.clearQuuRDSCache();
     	

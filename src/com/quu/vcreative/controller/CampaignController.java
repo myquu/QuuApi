@@ -82,15 +82,31 @@ public class CampaignController {
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
-			
-	@DELETE
-	@Path("/{id: \\d+}")
+	
+	@POST
+	@Path("/deleteCarts")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response deactivate(@PathParam("id") int id) 
+	public Response deleteStationsCarts(CampaignStationIn campaignStation)
 	{
-		int count = campaignService.deactivate(id);
+		String[] ret = campaignService.deleteStationsCarts(campaignStation);
 		
-		if(count > 0)
+		CampaignStationOut res = new CampaignStationOut(ret[1], null); 
+		
+		if(ret[0] == "1")
+			return Response.status(Response.Status.OK).entity(res).build();
+		else
+			return Response.status(Response.Status.NO_CONTENT).build();
+	}
+	
+	@DELETE
+	@Path("/{POID}/{id: \\d+}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deactivate(@PathParam("POID") String POID, @PathParam("id") int id) 
+	{
+		int ret = campaignService.deactivate(POID, id);
+		
+		if(ret == 1)
 			return Response.status(Response.Status.OK).build();
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();

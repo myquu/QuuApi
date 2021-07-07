@@ -99,8 +99,8 @@ public class CampaignController {
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 	
-	@DELETE
-	@Path("/{POID}/{id: \\d+}")
+	@POST
+	@Path("/deactivate/{POID}/{id: \\d+}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deactivate(@PathParam("POID") String POID, @PathParam("id") int id) 
 	{

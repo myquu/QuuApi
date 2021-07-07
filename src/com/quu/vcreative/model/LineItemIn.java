@@ -47,5 +47,14 @@ public class LineItemIn {
 	
 	//The image name is not passed from controller. It is a constant that will be saved only if image param comes with a value from controller.
 	private String imageName;
-		
+	
+	//The 8 dps fields are not passed from controller. 
+	private String dps1;
+	private String dps2;
+	private String dps3;
+	private String dps4;
+	private String dps5;
+	private String dps6;
+	private String dps7;
+	private String dps8;
 }

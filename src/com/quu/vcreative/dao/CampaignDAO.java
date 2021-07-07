@@ -49,7 +49,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call SaveRDSCampaignVC(?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call SaveRDSCampaignVC(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
     		st.setInt(1, itemId);
@@ -58,17 +58,25 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
             st.setString(4, lineItem.getEndDate());
             st.setString(5, lineItem.getLine1());
             st.setString(6, lineItem.getLine2());
-            st.setString(7, lineItem.getImageName());
-            st.setString(8, lineItem.getEmail());
+            st.setString(7, lineItem.getDps1());
+            st.setString(8, lineItem.getDps2());
+            st.setString(9, lineItem.getDps3());
+            st.setString(10, lineItem.getDps4());
+            st.setString(11, lineItem.getDps5());
+            st.setString(12, lineItem.getDps6());
+            st.setString(13, lineItem.getDps7());
+            st.setString(14, lineItem.getDps8());
+            st.setString(15, lineItem.getImageName());
+            st.setString(16, lineItem.getEmail());
             
-            st.registerOutParameter(9, Types.INTEGER);
-            st.setInt(9, lineItem.getId() != 0 ? lineItem.getId() : -1);
+            st.registerOutParameter(17, Types.INTEGER);
+            st.setInt(17, lineItem.getId() != 0 ? lineItem.getId() : -1);
             
-            st.registerOutParameter(10, Types.INTEGER);
+            st.registerOutParameter(18, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return new int[] {st.getInt(9), st.getInt(10)}; 
+            return new int[] {st.getInt(17), st.getInt(18)}; 
 		}
         catch(SQLException ex)
         {

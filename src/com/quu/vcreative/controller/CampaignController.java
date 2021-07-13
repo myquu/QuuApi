@@ -83,6 +83,7 @@ public class CampaignController {
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 	
+	/* NOT IN USE
 	@POST
 	@Path("/deleteCarts")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -98,6 +99,7 @@ public class CampaignController {
 		else
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
+	*/
 	
 	@POST
 	@Path("/deactivate/{POID}/{id: \\d+}")

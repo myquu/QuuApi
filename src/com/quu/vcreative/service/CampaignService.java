@@ -310,7 +310,7 @@ public class CampaignService implements ICampaignService{
     	}
     }
     
-    
+    /*
     public static void main(String[] args) {
 		
     	String text = "its only words and they are a";
@@ -325,4 +325,5 @@ public class CampaignService implements ICampaignService{
     	
     	//System.out.println(setDPSFields(lineItemIn));
 	}
+	*/
 }

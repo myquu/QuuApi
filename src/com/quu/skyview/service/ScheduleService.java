@@ -9,10 +9,6 @@ import java.util.Set;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
-import org.json.JSONObject;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quu.skyview.dao.IScheduleDAO;
 import com.quu.skyview.model.Advertisement;
@@ -148,67 +144,5 @@ public class ScheduleService implements IScheduleService{
     	
     	return ret;
     }
-    
-    
-    private ScheduleFields getScheduleFields(String jsonS)
-	{
-		try {
-			JsonNode root = mapper.readTree(jsonS);
-			
-			int StationID = root.path("StationID").asInt();
-						
-			String CampaignIDs = "";
-			
-			JsonNode EventsNode = root.path("Events");
-            if (EventsNode.isArray()) 
-            {
-            	for (JsonNode node1 : EventsNode) 
-            	{
-                    JsonNode BreaksNode = node1.path("Breaks");
-                    if (BreaksNode.isArray()) 
-                    {
-                    	for (JsonNode node2 : BreaksNode) 
-                    	{
-                    		JsonNode AdvertisementsNode = node2.path("Advertisements");
-                            if (AdvertisementsNode.isArray()) 
-                            {
-                            	for (JsonNode node3 : AdvertisementsNode) 
-                            	{
-                            		String CampaignID = node3.path("CampaignID").asText();
-                            		//int duration = node3.path("Length").asInt(); 
-                            	}
-                            }
-                    	}
-                    }
-                }
-            }
-            
-            //Delete the last comma 
-            if(!CampaignIDs.isEmpty())
-            {
-            	CampaignIDs = CampaignIDs.substring(0, CampaignIDs.length()-1);
-            }
-            
-			return null; //new ScheduleFields(id, StationID, CampaignIDs);
-		}
-		catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-		
-		return null;
-	}
-    
-    private class ScheduleFields
-	{
-		private int id;
-		private int StationID;
-		private String CampaignIDs;
-		
-		ScheduleFields(int id, int stationID, String campaignIDs) {
-			super();
-			this.id = id;
-			StationID = stationID;
-			CampaignIDs = campaignIDs;
-		}
-	}
+       
 }

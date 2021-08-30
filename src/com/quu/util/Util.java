@@ -5,7 +5,10 @@
 
 package com.quu.util;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -23,6 +26,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+
+import com.quu.skyview.model.Campaign;
 
 // Referenced classes of package com.quu.j2g.businesslogic:
 //            Constant
@@ -174,6 +179,49 @@ public class Util
     public static void clearQuuRDSCache()
     {
     	sendGetRequest("http://myquu.name:8080/QuuRDS/cache", false);
+    }
+    
+    //This function generates DPS fields from the passed line1 and line2. It will create at max 8 fields and return them in a list.
+    public static List<String> setDPSFields(String line1, String line2)
+    {
+    	String text = line1 + " " + line2;
+    	
+    	//Fill up the boxes with shifting logic - If a word starts on any of the last 2 indices of the box and has a length > 2 the shift it to the next box.
+    	if(text.length() <= 64)  //This check makes sure at the most 8 boxes get created
+    	{
+    		List<String> list = new ArrayList<>();
+    		
+    		int len = 0;
+    		
+    		while((len = text.length()) > 8)
+    		{
+    			String box = text.substring(0, 8);  //Take the first 8 chars (and put in a box)
+    			
+    			int indexOfLastSpace = box.lastIndexOf(" ");
+    			
+    			//If 5th or 6th index is a space AND If the last word starting at index 6 or 7 spills over to the next box. The check says is if the current box has a word of length 1 or 2 and the first char of the next box is not a space.
+    			if((indexOfLastSpace == 5 || indexOfLastSpace == 6) && box.substring(indexOfLastSpace + 1).matches("^\\w{1,2}$") && text.charAt(8) != ' ')  
+    			{
+    				list.add(box.substring(0, indexOfLastSpace+1));  //Take upto the last space
+					text = text.substring(indexOfLastSpace+1);
+    			}
+    			else  //The last space is either the 4th or an earlier index or the last(7th) index OR there is no space OR shifting is not needed.
+    			{
+    				list.add(box);
+    				text = text.substring(8);
+    			}
+    		}
+    		
+    		//The remaining text
+    		if(text.length() > 0)
+    		{
+    			list.add(text);
+    		}
+    		 		
+    		return list;
+    	}
+    	
+    	return null;
     }
     
     

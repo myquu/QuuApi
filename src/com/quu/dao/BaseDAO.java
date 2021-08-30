@@ -11,12 +11,12 @@ import javax.sql.DataSource;
 
 public class BaseDAO
 {
-	protected Connection getNetworkDBConnection()
+	protected Connection getSkyviewDBConnection()
     {
         try
         {
             Context initial = new InitialContext();
-            DataSource ds = (DataSource)initial.lookup("java:jboss/datasources/MySqlNetworkDS");
+            DataSource ds = (DataSource)initial.lookup("java:jboss/datasources/MySqlSkyviewDS");
             return ds.getConnection();
         }
         catch(NamingException ex)

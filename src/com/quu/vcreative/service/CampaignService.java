@@ -60,7 +60,22 @@ public class CampaignService implements ICampaignService{
 	        		lineItemIn.setImageName(imageName);
 	        	}
     			
-    			setDPSFields(lineItemIn);
+    			List<String> list = Util.setDPSFields(lineItemIn.getLine1(), lineItemIn.getLine2());
+    			
+    			if(list != null)
+    	    	{
+    	    		//Populate DPS fields using reflection
+    	    		try 
+    	    		{
+    	    			for(int i=0; i<list.size(); i++)
+    	        		{
+    		    			PropertyDescriptor pd = new PropertyDescriptor("dps"+(i+1), lineItemIn.getClass());
+    		    			// Call setter on specified property (setDps1())
+    		    			pd.getWriteMethod().invoke(lineItemIn, list.get(i));
+    	        		}
+    			    } 
+    	    		catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
+    	    	}
     			
 	    		int[] ret = campaignDAO.saveLineItem(itemId, lineItemIn);
 	    		
@@ -258,58 +273,8 @@ public class CampaignService implements ICampaignService{
 			    		
 		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
     }
- 
-    private static void setDPSFields(LineItemIn lineItemIn)
-    {
-    	String text = lineItemIn.getLine1() + " " + lineItemIn.getLine2();
-    	
-    	//Fill up the boxes with shifting logic - If a word starts on any of the last 2 indices of the box and has a length > 2 the shift it to the next box.
-    	if(text.length() <= 64)  //This check makes sure at the most 8 boxes get created
-    	{
-    		List<String> list = new ArrayList<>();
-    		
-    		int len = 0;
-    		
-    		while((len = text.length()) > 8)
-    		{
-    			String box = text.substring(0, 8);  //Take the first 8 chars (and put in a box)
-    			
-    			int indexOfLastSpace = box.lastIndexOf(" ");
-    			
-    			//If 5th or 6th index is a space AND If the last word starting at index 6 or 7 spills over to the next box. The check says is if the current box has a word of length 1 or 2 and the first char of the next box is not a space.
-    			if((indexOfLastSpace == 5 || indexOfLastSpace == 6) && box.substring(indexOfLastSpace + 1).matches("^\\w{1,2}$") && text.charAt(8) != ' ')  
-    			{
-    				list.add(box.substring(0, indexOfLastSpace+1));  //Take upto the last space
-					text = text.substring(indexOfLastSpace+1);
-    			}
-    			else  //The last space is either the 4th or an earlier index or the last(7th) index OR there is no space OR shifting is not needed.
-    			{
-    				list.add(box);
-    				text = text.substring(8);
-    			}
-    		}
-    		
-    		//The remaining text
-    		if(text.length() > 0)
-    		{
-    			list.add(text);
-    		}
-    		
-    		
-    		//Populate DPS fields using reflection
-    		try 
-    		{
-    			for(int i=0; i<list.size(); i++)
-        		{
-	    			PropertyDescriptor pd = new PropertyDescriptor("dps"+(i+1), lineItemIn.getClass());
-	    			// Call setter on specified property (setDps1())
-	    			pd.getWriteMethod().invoke(lineItemIn, list.get(i));
-        		}
-		    } 
-    		catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
-    	}
-    }
     
+        
     /*
     public static void main(String[] args) {
 		

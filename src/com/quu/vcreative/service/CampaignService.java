@@ -105,7 +105,7 @@ public class CampaignService implements ICampaignService{
     		//If any line item is active clear the cache.
     		if(anyActive)
     		{
-    			Util.clearQuuRDSCache();
+    			new Thread(() -> Util.clearQuuRDSCache()).start();
     		}
     	}
     	
@@ -132,7 +132,7 @@ public class CampaignService implements ICampaignService{
 	    	//active status
 	    	if(ret[1] == 1)
 	    	{
-	    		Util.clearQuuRDSCache();
+	    		new Thread(() -> Util.clearQuuRDSCache()).start();
 	    	}
     		    	
     		final String imageNameF = imageName;
@@ -203,7 +203,7 @@ public class CampaignService implements ICampaignService{
 	    		
 	    		status = "1";
 	    		
-	    		Util.clearQuuRDSCache();  //Clear cache
+	    		new Thread(() -> Util.clearQuuRDSCache()).start();
 	    	}
 	    }
     	
@@ -247,7 +247,7 @@ public class CampaignService implements ICampaignService{
 	    	
 	    	status = "1";
     		
-    		Util.clearQuuRDSCache();  //Clear cache
+	    	new Thread(() -> Util.clearQuuRDSCache()).start();
     	}
     	
     	return new String[]{status, unpartneredStations};
@@ -257,7 +257,7 @@ public class CampaignService implements ICampaignService{
         
     	int ret = campaignDAO.deactivate(POID, id);
     	
-    	Util.clearQuuRDSCache();
+    	new Thread(() -> Util.clearQuuRDSCache()).start();
     	
     	return ret;
     }

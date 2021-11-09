@@ -32,9 +32,15 @@ public class Campaign {
 	//Image is a Base64String POSTed to us. It is not sent out.
 	@JsonProperty(value = "Image", access = Access.WRITE_ONLY)  //the property may only be written (set) for deserialization, but will not be read (get) on serialization, that is, the value of the property is not included in output JSON.
 	private String image;
-	//The image name is not passed from controller. It is a constant that will be saved only if image param comes with a value from controller.
-	private String imageName;
+	@JsonProperty("ImageHash")
+	private String imageHash;
+	//The image url is not POSTed. It is only included in output JSON i.e. it will be serialized.
+	@JsonProperty(value = "ImageUrl", access = Access.READ_ONLY)  
+	private String imageUrl;
 	
+	//The image name is not passed from controller. It is a constant file name that will be saved only if image param comes with a value from controller.
+	@JsonProperty(access = Access.WRITE_ONLY)
+	private String imageName;
 	//The 8 dps fields are not passed from controller. 
 	private String dps1;
 	private String dps2;

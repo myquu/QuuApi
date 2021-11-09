@@ -13,8 +13,6 @@ public interface ICampaignService {
 	
     public int save(Campaign campaign);
 
-    public int deactivate(int id);
-	
     public int delete(int id);
     
 }

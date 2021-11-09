@@ -26,8 +26,6 @@ public class Event {
 	private int eventId;
 	@JsonProperty("EventCampaignID")
 	private int campaignId;
-	@JsonProperty("EventDate")
-	private String date;
 	@JsonProperty("QBreaks")
 	private List<Break> breakList;
 	

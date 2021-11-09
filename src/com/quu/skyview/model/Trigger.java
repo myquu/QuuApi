@@ -12,8 +12,6 @@ import lombok.Setter;
 @Setter
 public class Trigger {
 
-	@JsonProperty("StationID")
-	private int stationId;
 	@JsonProperty("EventID")
 	private int eventId;
 	@JsonProperty("BreakID")

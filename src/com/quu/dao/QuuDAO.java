@@ -22,7 +22,9 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     {
     	try(
 				Connection conn = getBusinessDBConnection();
-				PreparedStatement st = conn.prepareCall("call GetNetworkStaticData()");
+				PreparedStatement st = conn.prepareStatement("SELECT rs.id, rs.call_letters, tz.Name "
+						+ "FROM qb_radio_stations rs "
+						+ "JOIN mysql.time_zone_name tz ON(rs.mysql_time_zone_id = tz.Time_zone_id)");
 			)
 		{
     		try(ResultSet rs = st.executeQuery();)
@@ -33,22 +35,9 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
 		        	
 		            do {
 		            	String callLetters = rs.getString(2);
-		            	StationInput input = new StationInput(rs.getString(5), rs.getString(6), rs.getInt(7));
 		            	
-		            	Station station = stationMap.get(callLetters);
-		            	
-		            	//Add a new station and one of its inputs 
-		            	if(station == null)
-		            	{
-			            	List<StationInput> inputList = new ArrayList<>();
-			            	inputList.add(input);
-			            	stationMap.put(callLetters, new Station(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), inputList));
-		            	}
-		            	//Add additional input to existing station
-		            	else
-		            	{
-		            		station.getInputList().add(input);
-		            	}
+		            	//Unique station per row
+		            	stationMap.put(callLetters, new Station(rs.getInt(1), callLetters, rs.getString(3)));
 		            }while(rs.next());
 		            
 		            return stationMap;

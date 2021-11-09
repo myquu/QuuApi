@@ -21,6 +21,8 @@ public class Advertisement {
 	private int campaignId;
 	@JsonProperty("Length")
 	private int length;
+	@JsonProperty("ReportingID")
+	private String reportingId;
 	
 	//Internal properties
 	@JsonProperty(access = Access.WRITE_ONLY)

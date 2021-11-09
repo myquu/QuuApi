@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import com.quu.skyview.model.Advertisement;
 import com.quu.skyview.model.Break;
+import com.quu.skyview.model.Campaign;
 import com.quu.skyview.model.Event;
 import com.quu.skyview.model.Schedule;
 
@@ -27,4 +28,6 @@ public interface IScheduleDAO {
 	
     public int deleteStationFromNetworkCampaigns(int station_id, int eventId);
 	
+    
+    public List<Integer> getStationsForEventId(int eventId);
 }

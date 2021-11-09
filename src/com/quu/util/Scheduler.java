@@ -8,39 +8,42 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
+import com.quu.dao.QuuDAO;
 import com.quu.model.Station;
-import com.quu.service.IQuuService;
 
 
 public class Scheduler 
 {
-	@Inject
-    private static IQuuService quuService;
+	//@Inject is difficult to make work with a static field. The object is injected when an instance of the dependent is created but here no instance gets created.
+	//@Inject
+    //private static IQuuService quuService;
 	
 	//Key: callLetters, Value: Station obj
 	public static Map<String, Station> StationMap;
 	
-	//Refresh the cached data.
-    static 
+	//Refresh the cached data every 24 hours.
+    
+	static 
     {
+    	LocalDateTime NinePMCurrentDay = LocalDate.now().atTime(21, 1, 0);
+    	
     	//Calculate the minutes between now and 21:00:00
-    	Long initialDelay = LocalDateTime.now().until(LocalDate.now().atTime(21, 1, 0), ChronoUnit.MINUTES);
+    	Long initialDelay = LocalDateTime.now().until(NinePMCurrentDay, ChronoUnit.MINUTES);
     	
     	//If 21:0:00 is already passed then set initial delay to that time next day.
     	if(initialDelay < 0)
     	{
-    		initialDelay = LocalDateTime.now().until(LocalDate.now().plusDays(1).atTime(21, 1, 0), ChronoUnit.MINUTES);
+    		initialDelay = LocalDateTime.now().until(NinePMCurrentDay.plusDays(1), ChronoUnit.MINUTES);
     	}
     		
     	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     	scheduler.scheduleAtFixedRate(() -> {
-    		Scheduler.StationMap = quuService.getStations(); 
-    		System.out.println("QuuAPI cache refreshed!");
-		}, initialDelay, TimeUnit.DAYS.toMinutes(1), TimeUnit.MINUTES);
+    		
+    		StationMap = new QuuDAO().getStations();
+    		//System.out.println("QuuAPI cache refreshed!");
+    	}, initialDelay, 24*60, TimeUnit.MINUTES);
     	
-    	scheduler.shutdown();
+    	//scheduler.shutdown();
     }
-    
+	
 }

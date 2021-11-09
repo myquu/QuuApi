@@ -9,18 +9,21 @@ import java.io.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
+import javax.annotation.ManagedBean;
+
 // Referenced classes of package com.quu.j2g.businesslogic:
 //            LinkedProperties, RDSParser
-
 public class Constant
 {
     public static final String JBOSS_HOME_DIR = System.getProperty("jboss.server.base.dir");
-    public static final String PROPERTIES_DIR = "props";
+    public static final String LOG_FILE;
     public static final String IMAGES_DIR_URL;
     public static final String IMAGES_DIR_URL_INSECURE;
-    public static final String BASE64STRINGTOIMAGESERVICE_URL = "https://quuit.com/imageserver/image/saveBase64StringImage";
-    public static final String IMAGEFROMURLSERVICE_URL = "http://quuit.com/imageserver/image/saveImageFromUrl";
-    public static final String RDSCAMPAIGNPREVIEWURL = "http://advertiserexperience.com/Quu2Go/Preview.aspx?campaign_type=BizRDS&campaign_id=";
+    //TBD: Move these to the config file. Use a new config file for it.
+    public static final String BASE64STRINGTOIMAGESERVICE_URL;
+    public static final String IMAGEFROMURLSERVICE_URL;
+    public static final String DELETEIMAGESERVICE_URL;
+    public static final String RDSCAMPAIGNPREVIEWURL;
     	
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -33,7 +36,7 @@ public class Constant
         
         try
         {
-        	props.load(new FileReader((new StringBuilder(String.valueOf(JBOSS_HOME_DIR))).append("/").append("props").append("/QuuRDS/config.properties").toString()));
+        	props.load(new FileReader((new StringBuilder(String.valueOf(JBOSS_HOME_DIR))).append("/").append("props").append("/QuuAPI/config.properties").toString()));
         	System.out.println("QuuAPI config file loaded");
         }
         catch(IOException ex)
@@ -42,7 +45,13 @@ public class Constant
         }
         
         
+        LOG_FILE = props.getProperty("LOG_FILE");
         IMAGES_DIR_URL = props.getProperty("IMAGES_DIR_URL");
         IMAGES_DIR_URL_INSECURE = props.getProperty("IMAGES_DIR_URL_INSECURE");
+        
+        BASE64STRINGTOIMAGESERVICE_URL = props.getProperty("BASE64STRINGTOIMAGESERVICE_URL");
+        IMAGEFROMURLSERVICE_URL = props.getProperty("IMAGEFROMURLSERVICE_URL");
+        DELETEIMAGESERVICE_URL = props.getProperty("DELETEIMAGESERVICE_URL");
+        RDSCAMPAIGNPREVIEWURL = props.getProperty("RDSCAMPAIGNPREVIEWURL");
     }
 }

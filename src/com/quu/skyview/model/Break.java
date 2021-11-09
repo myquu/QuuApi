@@ -24,8 +24,6 @@ public class Break {
 
 	@JsonProperty("BreakID")
 	private int breakId;
-	@JsonProperty("ScheduledTime")
-	private String time;
 	@JsonProperty("QAdvertisements")
 	private List<Advertisement> advertisementList;
 	

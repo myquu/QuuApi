@@ -20,7 +20,7 @@ import com.quu.util.Util;
 @RequestScoped
 public class CampaignService implements ICampaignService{
 
-	private static final String IMAGENAME = "logo.jpeg";
+	private static final String IMAGENAME = "logo.jpeg";  //The image comes in a a Base64 string without an image name so we set this hardcoded name. We don't store the name in the database.
 	
 	@Inject
     private ICampaignDAO campaignDAO;
@@ -29,17 +29,18 @@ public class CampaignService implements ICampaignService{
     @Override
     public List<Campaign> getAll() {
 
-        return campaignDAO.getAll();
+        return campaignDAO.getAll(IMAGENAME);
     }
     
     @Override
     public Campaign get(int id) {
         
-        return campaignDAO.get(id);
+        return campaignDAO.get(id, IMAGENAME);
     }
     
-    //Adds (-1)/Updates (<> -1) a campaign. If a Base64 string(image) is passed, we convert it to an image file and save it on imageserver. To save it we need the campaign id.
     /**
+     * This method adds (-1)/Updates (<> -1) a campaign. 
+     * If a Base64 string(image) is passed, we convert it to an image file and save it on imageserver. To save it we need the campaign id.
      * Returns >0 - line item id (OK), -1 - Not a valid SV campaign, -2 - DB error.
      */
     @Override
@@ -54,11 +55,6 @@ public class CampaignService implements ICampaignService{
     			return -1;
     	}
     	
-    	
-    	if(campaign.getImage() != null)
-    	{
-    		campaign.setImageName(IMAGENAME);
-    	}
     	
     	List<String> list = Util.setDPSFields(campaign.getLine1(), campaign.getLine2());
     	
@@ -77,20 +73,20 @@ public class CampaignService implements ICampaignService{
     		catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
     	}
     	
-    	int[] ret = campaignDAO.save(campaign);
+    	int[] ret = campaignDAO.save(campaign, IMAGENAME);
     	
     	if(ret != null)
     	{
-    		int lineItemId = ret[0],
+    		int id = ret[0],
 				active = ret[1];
     		
-	    	if(campaign.getImage() != null)
+    		if(!(campaign.getImageHash().equals("0") || campaign.getImageHash().equals("-1")))  //If its neither 0 nor -1 it means we want to insert or update the image value.
 	    	{
 		    	new Thread(() -> {
 			    	
 		    		//Handle image base64 to url conversion and save on imageserver
 		    		Map<String, String> params = new HashMap<String, String>();
-		    		params.put("imagePath", "campaign_images/" + lineItemId + "/logo");
+		    		params.put("imagePath", "networkcampaign_images/" + id + "/logo");
 		    		params.put("name", IMAGENAME);
 		    		params.put("base64String", campaign.getImage());
 		    		
@@ -98,44 +94,27 @@ public class CampaignService implements ICampaignService{
 		        	
 			    }).start();
 	    	}
-	    	
+    		//If its a campaign being updated and the image in it needs to be deleted, then delete it from the image server. The column has already been set to null in the save call above.
+    		else if(campaign.getImageHash().equals("0") && campaign.getId() != -1)
+    		{
+    			new Thread(() -> Util.sendGetRequest(Constant.DELETEIMAGESERVICE_URL + "?requestFrom=QuuAPI&imagePath=" + "networkcampaign_images/" + id + "/logo" + "&fileName=" + IMAGENAME, false)).start();
+    		}
+    		
+    		   		
 	    	//active status
 	    	if(active == 1)
 	    	{
-	    		Util.clearQuuRDSCache();
+	    		new Thread(() -> Util.clearQuuRDSCache()).start();
 	    	}
 	    	
-	    	return lineItemId;
+	    	return id;
     	}
     	
     	return -2;
     }
     
     /**
-     * Returns 1 - updated rows (OK), -1 - Not a valid SV campaign, -2 - DB error.
-     */
-    @Override
-    public int deactivate(int id) {
-        
-    	int v = campaignDAO.campaignExists(id);
-		
-		if(v == -1)
-		{			
-			return -1;
-		}
-		
-    	int ret = campaignDAO.deactivate(id);
-    	
-    	if(ret == 1)
-    	{
-    		Util.clearQuuRDSCache();
-    	}
-    	
-    	return ret;
-    }
-    
-    /**
-     * Returns 1 - deleted row (OK), -1 - Not a valid SV campaign, -2 - DB error.
+     * Returns 1 - deleted/deactivated row (OK), -1 - Not a valid SV campaign.
      */
     @Override
     public int delete(int id) {
@@ -147,13 +126,10 @@ public class CampaignService implements ICampaignService{
 			return -1;
 		}
 		
-    	int ret = campaignDAO.delete(id);
+    	campaignDAO.delete(id);
     	
-    	if(ret == 1)
-    	{
-    		Util.clearQuuRDSCache();
-    	}
-    	
-    	return ret;
+    	new Thread(() -> Util.clearQuuRDSCache()).start();
+    	    	
+    	return 1;
     }
 }

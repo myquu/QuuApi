@@ -11,10 +11,13 @@ import javax.ws.rs.core.Response;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quu.dao.IQuuDAO;
 import com.quu.model.Station;
 import com.quu.model.StationInput;
-import com.quu.skyview.dao.ICampaignDAO;
+import com.quu.service.AblyUtil;
+import com.quu.skyview.dao.IScheduleDAO;
 import com.quu.skyview.model.Campaign;
 import com.quu.skyview.model.Trigger;
 import com.quu.util.Scheduler;
@@ -25,9 +28,9 @@ import com.quu.util.Util;
 public class TriggerService implements ITriggerService{
 
 	@Inject
-    private ICampaignDAO campaignDAO;
+    private IScheduleDAO scheduleDAO;
 		
-
+	/*
     //@Override
     public int sendCampaigns(String json) {
         
@@ -73,13 +76,37 @@ public class TriggerService implements ITriggerService{
     	
     	return -1;
     }
+    */
     
     @Override
+    /**
+     * This method sends the trigger to all Quu360 instances running those stations that are linked to the passed eventId
+     */
 	public int process(Trigger trigger) 
     {
-		
+    	ObjectMapper objectMapper = new ObjectMapper();
     	
-		return 0;
+    	String data = null;
+    	
+    	//Deserialize to read the eventId
+    	try {
+    		data = objectMapper.writeValueAsString(trigger);
+    	}
+    	catch(JsonProcessingException ex) {}
+    	
+    	List<Integer> stationIdList = scheduleDAO.getStationsForEventId(trigger.getEventId());
+    	
+    	if(stationIdList != null)
+    	{
+    		String dataF = data;
+    		
+    		for(int stationId : stationIdList)
+    		{
+    			new Thread(() -> AblyUtil.publish("Skyview", "NetworkTrigger:"+stationId, dataF)).start();
+    		}
+    	}
+    	
+		return 1;
 	}
 
 

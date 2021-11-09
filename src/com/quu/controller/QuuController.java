@@ -20,7 +20,6 @@ import com.quu.model.Station;
 import com.quu.service.IQuuService;
 
 @Path("/")
-//General purpose class for non RESTful entities. NOT IN USE
 public class QuuController {
 
 	@Inject

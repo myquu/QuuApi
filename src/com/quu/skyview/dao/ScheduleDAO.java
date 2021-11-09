@@ -28,18 +28,19 @@ import com.quu.skyview.model.Schedule;
 @RequestScoped
 public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 
+	@Override
 	public Schedule get(int station_id)
     {
     	try(
     			Connection conn = getSkyviewDBConnection();
-				PreparedStatement st = conn.prepareStatement("select e.id event_id, e.eventId, e.campaignId, e.date, "
-						+ "b.id break_id, b.breakId, b.time, "
-						+ "a.id advertisement_id, a.campaign_id, a.length "
-						+ "from skyview.event e "
-						+ "join skyview.break b on(e.id = b.event_id) "
-						+ "join skyview.advertisement a on(b.id = a.break_id) "
+				PreparedStatement st = conn.prepareStatement("select e.id event_id, e.eventId, e.campaignId, "
+						+ "b.id break_id, b.breakId, "
+						+ "a.id advertisement_id, a.campaign_id, a.reportingId, a.length "
+						+ "from event e "
+						+ "join break b on(e.id = b.event_id) "
+						+ "join advertisement a on(b.id = a.break_id) "
 						+ "where e.station_id = ? "
-						+ "order by 1,5");
+						+ "order by 1,5,8");
 			)
 		{
     		st.setInt(1, station_id);
@@ -52,9 +53,9 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 		        	
 		        	do {
 		        		
-		        		Event event = new Event(rs.getInt(2), rs.getInt(3), rs.getString(4), null, rs.getInt(1));
-		        		Break break1 = new Break(rs.getInt(6), rs.getString(7), null,  rs.getInt(5));		        		
-		        		Advertisement advertisement = new Advertisement(rs.getInt(9), rs.getInt(10), rs.getInt(8));
+		        		Event event = new Event(rs.getInt(2), rs.getInt(3), null, rs.getInt(1));
+		        		Break break1 = new Break(rs.getInt(5), null,  rs.getInt(4));		        		
+		        		Advertisement advertisement = new Advertisement(rs.getInt(7), rs.getInt(9), rs.getString(8), rs.getInt(6));
 		        		
 		        		if(!eventList.contains(event))
 		        		{
@@ -108,6 +109,7 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
     	return null;
     }
 	
+	@Override
 	public int deleteStationFromNetworkCampaigns(int station_id, int eventId)
 	{
 		try(
@@ -130,6 +132,7 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 		return -1;
 	}
 		
+	@Override
 	public int assignStationToNetworkCampaigns(int stationId, String campaignIds)
     {
     	try(
@@ -152,19 +155,18 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
     	return -1;
     }
 	
-	
+	@Override
 	public int saveEvent(int station_id, Event event)
 	{
 		try(
 				Connection conn = getSkyviewDBConnection();
-				PreparedStatement st = conn.prepareStatement("insert into event(station_id, eventId, campaignId, date) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement st = conn.prepareStatement("insert into event(station_id, eventId, campaignId) values(?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			)
         {
 			st.setInt(1, station_id);
         	st.setInt(2, event.getEventId());
         	st.setInt(3, event.getCampaignId());
-        	st.setString(4, event.getDate());
-                                    
+        	                                    
         	st.executeUpdate();
         	
         	try(ResultSet rs = st.getGeneratedKeys();)
@@ -185,18 +187,17 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 	
 	
 	//The below insert data in Skyview tables.
-	
+	@Override
 	public int saveBreak(int event_id, Break break1)
 	{
 		try(
 				Connection conn = getSkyviewDBConnection();
-				PreparedStatement st = conn.prepareStatement("insert into break(event_id, breakId, time) values(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement st = conn.prepareStatement("insert into break(event_id, breakId) values(?,?)", Statement.RETURN_GENERATED_KEYS);
 			)
         {
 			st.setInt(1, event_id);
 			st.setInt(2, break1.getBreakId());
-        	st.setString(3, break1.getTime());
-                                    
+        	                                    
         	st.executeUpdate();
         	
         	try(ResultSet rs = st.getGeneratedKeys();)
@@ -215,29 +216,23 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 		return -1;
 	}
 	
+	@Override
 	public int saveAdvertisement(int break_id, Advertisement advertisement)
 	{
 		try(
 				Connection conn = getSkyviewDBConnection();
-				PreparedStatement st = conn.prepareStatement("insert into advertisement(break_id, campaign_id, length) values(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement st = conn.prepareStatement("insert into advertisement(break_id, campaign_id, length, reportingId) values(?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
 			)
         {
 			st.setInt(1, break_id);
         	st.setInt(2, advertisement.getCampaignId());
         	st.setInt(3, advertisement.getLength());
-        	                                    
+        	st.setString(4, advertisement.getReportingId());                                    
+        	
         	st.executeUpdate();
         	
-        	/* This generated id is of no use
-        	try(ResultSet rs = st.getGeneratedKeys();)
-    		{
-		        if(rs.next())
-		        {
-		        	return rs.getInt(1); 
-		        }
-    		}
-    		*/
-        	
+        	//The generated id is of no use 
+        	        	
         	return 1;
 	    }
         catch(SQLException ex)
@@ -248,4 +243,37 @@ public class ScheduleDAO extends BaseDAO implements IScheduleDAO{
 		return -1;
 	}
 	
+	@Override
+	public List<Integer> getStationsForEventId(int eventId)
+	{
+		try(
+    			Connection conn = getSkyviewDBConnection();
+				PreparedStatement st = conn.prepareStatement("select distinct station_id from event where eventId = ?");
+			)
+		{
+    		st.setInt(1, eventId);
+    		
+    		try(ResultSet rs = st.executeQuery();)
+    		{
+		        if(rs.next())
+		        {
+		        	List<Integer> stationIdList = new ArrayList<>();
+		        	
+		        	do {
+		        		
+		        		stationIdList.add(rs.getInt(1));
+		        		
+		        	}while(rs.next());
+		        	
+		        	return stationIdList;
+		        }
+    		}
+	    }
+		catch (SQLException ex)
+		{
+			System.out.println(new java.util.Date() + "SkyviewApp:ScheduleDAO getStationsForEventId " + ex.getMessage());
+		}
+		
+    	return null;
+	}
 }

@@ -16,6 +16,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import javax.annotation.ManagedBean;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -31,7 +33,6 @@ import com.quu.skyview.model.Campaign;
 
 // Referenced classes of package com.quu.j2g.businesslogic:
 //            Constant
-
 public class Util
 {
 	//We use apache.httpclient for web operations. Why HttpURLConnection should not be used...https://dzone.com/articles/pola-and-httpurlconnection
@@ -175,16 +176,16 @@ public class Util
         }
     }
     
-    //Call from Campaign only if active. Call from schedule always.
+    //This method clears the campaigns' cache.
     public static void clearQuuRDSCache()
     {
     	sendGetRequest("http://myquu.name:8080/QuuRDS/cache", false);
     }
     
-    //This function generates DPS fields from the passed line1 and line2. It will create at max 8 fields and return them in a list.
+    //This function generates DPS fields from the passed line1 and line2 (can be null). It will create at max 8 fields and return them in a list.
     public static List<String> setDPSFields(String line1, String line2)
     {
-    	String text = line1 + " " + line2;
+    	String text = line1 + (line2 != null ?  " "+line2 : "");
     	
     	//Fill up the boxes with shifting logic - If a word starts on any of the last 2 indices of the box and has a length > 2 the shift it to the next box.
     	if(text.length() <= 64)  //This check makes sure at the most 8 boxes get created

@@ -47,11 +47,7 @@ public class ScheduleService implements IScheduleService{
     	
     	for(Event event : schedule.getEventList())
     	{
-    		String date = event.getDate();
-    		
-    		event.setDate(date.substring(0, 10));  //"2021-08-10T00:00:00" => "2021-08-10"
-    		
-			int event_id = scheduleDAO.saveEvent(schedule.getStationId(), event);
+    		int event_id = scheduleDAO.saveEvent(schedule.getStationId(), event);
 			
 			if(event_id != -1)
 			{
@@ -93,7 +89,7 @@ public class ScheduleService implements IScheduleService{
 		
 		if(ret == 1)
     	{
-	    	Util.clearQuuRDSCache();
+			new Thread(() -> Util.clearQuuRDSCache()).start();
 	    }
 		
         return ret;
@@ -139,7 +135,7 @@ public class ScheduleService implements IScheduleService{
     	
     	if(ret == 1)
     	{
-    		Util.clearQuuRDSCache();
+    		new Thread(() -> Util.clearQuuRDSCache()).start();
     	}
     	
     	return ret;

@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import com.quu.skyview.model.Trigger;
 import com.quu.skyview.service.ITriggerService;
+import com.quu.util.Util;
 
 
 @RequestScoped  //THESE ARE NOT NEEDED NOW
@@ -45,6 +46,8 @@ public class TriggerController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response process(Trigger trigger)
 	{
+		System.out.println("Received trigger: " + trigger.getEventId());
+		
 		int status = triggerService.process(trigger);
 		
 		if(status == 1)

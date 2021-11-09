@@ -66,21 +66,6 @@ public class CampaignController {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 	}
 	
-	@POST
-	@Path("/deactivate/{id: \\d+}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response deactivate(@PathParam("id") int id) 
-	{
-		int count = campaignService.deactivate(id);
-		
-		if(count == 1)
-			return Response.status(Response.Status.OK).build();
-		else if(count == -1)
-			return Response.status(Response.Status.NO_CONTENT).build();
-		else
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-	}
-	
 	@DELETE
 	@Path("/{id: \\d+}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -90,9 +75,7 @@ public class CampaignController {
 		
 		if(count == 1)
 			return Response.status(Response.Status.OK).build();
-		else if(count == -1)
-			return Response.status(Response.Status.NO_CONTENT).build();
 		else
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 }

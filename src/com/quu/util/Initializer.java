@@ -5,11 +5,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import com.quu.dao.QuuDAO;
 import com.quu.service.IQuuService;
-import com.quu.util.Scheduler;
 
-
+//https://zetcode.com/jaxrs/resteasycrud/
 //This is where we put any code that needs to be run on app startup.
 
 @WebListener

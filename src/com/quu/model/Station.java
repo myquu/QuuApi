@@ -14,9 +14,7 @@ import lombok.ToString;
 @Setter
 public class Station
 {
-    private int id;
+	private int id;
     private String callLetters;
     private String tzName;
-    private String adCategories;
-    private List<StationInput> inputList;
 }

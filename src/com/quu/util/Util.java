@@ -5,18 +5,11 @@
 
 package com.quu.util;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.text.SimpleDateFormat;
 import java.util.*;
-
-import javax.annotation.ManagedBean;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -29,7 +22,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import com.quu.skyview.model.Campaign;
+import com.quu.util.Constant;
+
 
 // Referenced classes of package com.quu.j2g.businesslogic:
 //            Constant
@@ -223,6 +217,23 @@ public class Util
     	}
     	
     	return null;
+    }
+    
+    public static void logQueryString(String message)
+    {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String date = format.format(new Date());
+        try
+        {
+            FileWriter fw = new FileWriter(Constant.LOG_FILE, true);
+            fw.write((new StringBuilder(String.valueOf(date))).append(": ").append(message).append("\n").toString());
+            fw.flush();
+            fw.close();
+        }
+        catch(IOException e)
+        {
+            System.out.println((new StringBuilder("Error while logging ")).append(e.getMessage()).toString());
+        }
     }
     
     

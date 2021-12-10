@@ -23,8 +23,9 @@ public class Constant
     public static final String BASE64STRINGTOIMAGESERVICE_URL;
     public static final String IMAGEFROMURLSERVICE_URL;
     public static final String DELETEIMAGESERVICE_URL;
-    public static final String RDSCAMPAIGNPREVIEWURL;
-    	
+    public static final String BIZCAMPAIGNPREVIEWURL;
+    public static final String RTCAMPAIGNPREVIEWURL;	
+    
     public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -52,6 +53,7 @@ public class Constant
         BASE64STRINGTOIMAGESERVICE_URL = props.getProperty("BASE64STRINGTOIMAGESERVICE_URL");
         IMAGEFROMURLSERVICE_URL = props.getProperty("IMAGEFROMURLSERVICE_URL");
         DELETEIMAGESERVICE_URL = props.getProperty("DELETEIMAGESERVICE_URL");
-        RDSCAMPAIGNPREVIEWURL = props.getProperty("RDSCAMPAIGNPREVIEWURL");
+        BIZCAMPAIGNPREVIEWURL = props.getProperty("BIZCAMPAIGNPREVIEWURL");
+        RTCAMPAIGNPREVIEWURL = props.getProperty("RTCAMPAIGNPREVIEWURL");
     }
 }

@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.quu.util.Constant;
+import com.quu.util.Util;
 import com.quu.vcreative.model.CampaignIn;
 import com.quu.vcreative.model.CampaignOut;
 import com.quu.vcreative.model.CampaignStationIn;
@@ -39,6 +40,8 @@ public class CampaignController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response save(CampaignIn campaignIn)
 	{
+		//Util.logQueryString(campaignIn.toString());
+		
 		CampaignOut campaignOut = campaignService.save(campaignIn);
 		
 		List<LineItemOut> lineItemOuts = campaignOut.getLineItems();
@@ -59,7 +62,7 @@ public class CampaignController {
 		
 		if(found == 1)
 		{
-			String previewUrl = Constant.RDSCAMPAIGNPREVIEWURL + imageIn.getId();
+			String previewUrl = Constant.BIZCAMPAIGNPREVIEWURL + imageIn.getId();
 			
 			return Response.status(Response.Status.OK).entity(new LineItemOut(imageIn.getVC_LineItem_ID(), imageIn.getId(), previewUrl)).build();
 		}

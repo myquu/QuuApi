@@ -96,7 +96,7 @@ public class CampaignService implements ICampaignService{
 	    	    		new Thread(() -> saveImageOnImageserver(VCImageUrl, lineItemId, imageNameF)).start();
 	    	    	}
 	    			
-	    			lineItemOuts.add(new LineItemOut(lineItemIn.getVC_LineItem_ID(), lineItemId, (Constant.RDSCAMPAIGNPREVIEWURL + lineItemId)));
+	    			lineItemOuts.add(new LineItemOut(lineItemIn.getVC_LineItem_ID(), lineItemId, (Constant.BIZCAMPAIGNPREVIEWURL + lineItemId)));
 		        }
     		}
     		
@@ -179,7 +179,7 @@ public class CampaignService implements ICampaignService{
 	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
 	    	
 	    	/*The below call
-	    	 * 1. Updates the advertiser(if needed)
+	    	 * 1. Adds the advertiser to the campaign by selecting an existing one or creating a new one.
 	    	 * 2. Assigns new stations to the advertiser(if needed). 
 	    	 * 3. Deletes all station assignments and add anew to the campaign.
 	    	 * 4. Deletes existing rdo campaigns and its spots.

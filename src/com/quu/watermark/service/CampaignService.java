@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import com.quu.watermark.dao.ICampaignDAO;
 import com.quu.watermark.model.CampaignIn;
 import com.quu.watermark.model.CampaignOut;
+import com.quu.watermark.model.CampaignQId;
 import com.quu.util.Constant;
 import com.quu.util.Util;
 
@@ -74,12 +75,22 @@ public class CampaignService implements ICampaignService{
     			new Thread(() -> Util.clearQuuRDSCache()).start();
     		}
 			
-			return new CampaignOut(id, (Constant.RTCAMPAIGNPREVIEWURL + id));
+			return new CampaignOut(id);
 		}
     		
     	return null;	    		    		
     }
         
+    public int assignQIds(CampaignQId campaignQId)
+    {
+    	return campaignDAO.assignQIds(campaignQId.getId(), String.join(",", campaignQId.getQIds()));
+    }
+    
+    public int unassignQIds(CampaignQId campaignQId)
+    {
+    	return campaignDAO.unassignQIds(campaignQId.getId(), String.join(",", campaignQId.getQIds()));
+    }
+    
     public int deactivate(int id) {
         
     	int ret = campaignDAO.deactivate(id);
@@ -94,7 +105,7 @@ public class CampaignService implements ICampaignService{
     {
     	Map<String, String> params = new HashMap<String, String>();
 		params.put("url", imageUrl);
-		params.put("imagePath", "Campaigns/" + id);
+		params.put("imagePath", "networkcampaign_images/" + id + "/logo");
 		params.put("name", imageNameF);
 			    		
 		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);

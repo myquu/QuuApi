@@ -17,10 +17,7 @@ import lombok.Setter;
 
 public class CampaignOut {
 
-	@JsonProperty("id")
+	@JsonProperty("campaignId")
 	private int id;
-	
-	@JsonProperty("previewUrl")
-	private String previewUrl;	
 		
 }

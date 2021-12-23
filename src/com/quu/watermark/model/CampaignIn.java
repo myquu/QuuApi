@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-
 @NoArgsConstructor  //This is needed to deserialize from the JSON to object in controller.
 //@RequiredArgsConstructor  //picks only those fields that are marked @NonNull
 @AllArgsConstructor
@@ -22,9 +21,6 @@ public class CampaignIn {
 
 	@JsonProperty("campaignId")
 	private int id;
-	
-	@JsonProperty("QID")
-	private String qid;
 	
 	@JsonProperty("name")
 	private String name;
@@ -42,11 +38,11 @@ public class CampaignIn {
 	private String line2;
 	
 	//Submitter user's email id
-	@JsonProperty("email")
-	private String email;
+	//@JsonProperty("email")
+	//private String email;
 	
-	@JsonProperty("source")
-	private String source;
+	//@JsonProperty("source")
+	//private String source;
 	
 	@JsonProperty("imageUrl")
 	private String imageUrl;

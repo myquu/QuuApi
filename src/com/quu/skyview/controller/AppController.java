@@ -18,6 +18,7 @@ public class AppController extends Application {
 		resources.add(CampaignController.class);
 		resources.add(ScheduleController.class);
 		resources.add(TriggerController.class);
+		resources.add(WatermarkController.class);
 		
         return resources;
 		

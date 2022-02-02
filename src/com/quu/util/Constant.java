@@ -19,9 +19,10 @@ public class Constant
     public static final String LOG_FILE;
     public static final String IMAGES_DIR_URL;
     public static final String IMAGES_DIR_URL_INSECURE;
-    //TBD: Move these to the config file. Use a new config file for it.
-    public static final String BASE64STRINGTOIMAGESERVICE_URL;
-    public static final String IMAGEFROMURLSERVICE_URL;
+    //public static final String BASE64STRINGTOIMAGESERVICE_URL;
+    //public static final String IMAGEFROMURLSERVICE_URL;
+    //This service resizes the passed image to under 14kb and 200x200 and saves it on the image server. It can take both an external image url and a base 64 image string.
+    public static final String SAVEIMAGESERVICE_URL;
     public static final String DELETEIMAGESERVICE_URL;
     public static final String BIZCAMPAIGNPREVIEWURL;
     public static final String RTCAMPAIGNPREVIEWURL;	
@@ -50,8 +51,7 @@ public class Constant
         IMAGES_DIR_URL = props.getProperty("IMAGES_DIR_URL");
         IMAGES_DIR_URL_INSECURE = props.getProperty("IMAGES_DIR_URL_INSECURE");
         
-        BASE64STRINGTOIMAGESERVICE_URL = props.getProperty("BASE64STRINGTOIMAGESERVICE_URL");
-        IMAGEFROMURLSERVICE_URL = props.getProperty("IMAGEFROMURLSERVICE_URL");
+        SAVEIMAGESERVICE_URL = props.getProperty("SAVEIMAGESERVICE_URL");
         DELETEIMAGESERVICE_URL = props.getProperty("DELETEIMAGESERVICE_URL");
         BIZCAMPAIGNPREVIEWURL = props.getProperty("BIZCAMPAIGNPREVIEWURL");
         RTCAMPAIGNPREVIEWURL = props.getProperty("RTCAMPAIGNPREVIEWURL");

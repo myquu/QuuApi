@@ -263,15 +263,15 @@ public class CampaignService implements ICampaignService{
     }
     
     
-    private void saveImageOnImageserver(String VCImageUrl, int id, String imageNameF)
+    private void saveImageOnImageserver(String VCImageUrl, int id, String imageName)
     {
-    	//Handle image base64 to url conversion and save on image server
-		Map<String, String> params = new HashMap<String, String>();
-		params.put("url", VCImageUrl);
+    	Map<String, String> params = new HashMap<String, String>();
+		params.put("downloadFile", VCImageUrl);
 		params.put("imagePath", "campaign_images/" + id + "/logo");
-		params.put("name", imageNameF);
-			    		
-		Util.getWebResponse(Constant.IMAGEFROMURLSERVICE_URL, params, false);
+		params.put("fileName", imageName);
+		params.put("requestFrom", "QuuAPI");
+		
+		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
     }
     
         

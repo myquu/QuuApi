@@ -1,4 +1,4 @@
-package com.quu.watermark.model;
+package com.quu.skyview.model;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import lombok.ToString;
 @Setter
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)  //This is so fields passed from controller but not declared here are ignored.
-public class CampaignQId {
+public class CampaignWatermarks {
 
 	@JsonProperty("campaignId")
 	private int id;

@@ -87,10 +87,11 @@ public class CampaignService implements ICampaignService{
 		    		//Handle image base64 to url conversion and save on imageserver
 		    		Map<String, String> params = new HashMap<String, String>();
 		    		params.put("imagePath", "networkcampaign_images/" + id + "/logo");
-		    		params.put("name", IMAGENAME);
+		    		params.put("fileName", IMAGENAME);
 		    		params.put("base64String", campaign.getImage());
+		    		params.put("requestFrom", "QuuAPI");
 		    		
-		    		Util.getWebResponse(Constant.BASE64STRINGTOIMAGESERVICE_URL, params, false);
+		    		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
 		        	
 			    }).start();
 	    	}

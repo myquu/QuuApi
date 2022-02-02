@@ -40,7 +40,7 @@ public class CampaignController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response save(CampaignIn campaignIn)
 	{
-		Util.logQueryString(campaignIn.toString());
+		//Util.logQueryString(campaignIn.toString());
 		
 		CampaignOut campaignOut = campaignService.save(campaignIn);
 		
@@ -76,7 +76,7 @@ public class CampaignController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response assignStationsCarts(CampaignStationIn campaignStation)
 	{
-		Util.logQueryString(campaignStation.toString());
+		//Util.logQueryString(campaignStation.toString());
 		
 		String[] ret = campaignService.assignStationsCarts(campaignStation);
 		

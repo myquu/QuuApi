@@ -25,7 +25,8 @@ import com.quu.util.Constant;
 @RequestScoped
 public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	
-	private static final int SKY_NETWORK_ID = 2;
+	//Now the campaigns can be linked with both stations and watermarks.
+	//private static final int SKY_NETWORK_ID = 2;
 	
 	//Returns all campaigns that were never activated or those that are currently active.
 	public List<Campaign> getAll(String IMAGENAME)
@@ -35,10 +36,10 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) and c.network_id = ? order by c.id desc");
+						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) order by c.id desc");
 			)
 		{
-    		st.setInt(1, SKY_NETWORK_ID);
+    		//st.setInt(1, SKY_NETWORK_ID);
     		
     		try(ResultSet rs = st.executeQuery();)
     		{
@@ -81,11 +82,11 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) and c.network_id = ? and c.id = ?");
+						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) and c.id = ?");
 			)
 		{
-    		st.setInt(1, SKY_NETWORK_ID);
-    		st.setInt(2, id);
+    		//st.setInt(1, SKY_NETWORK_ID);
+    		st.setInt(1, id);
     		
     		try(ResultSet rs = st.executeQuery();)
     		{
@@ -121,11 +122,11 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where network_id = ? and id = ?");
+    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where id = ?");
 			)
         {
-			st.setInt(1, SKY_NETWORK_ID);
-        	st.setInt(2, id);
+			//st.setInt(1, SKY_NETWORK_ID);
+        	st.setInt(1, id);
         	        	
         	try(ResultSet rs = st.executeQuery();)
 	        {
@@ -150,33 +151,33 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call SaveNetworkCampaignSV(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call SaveNetworkCampaignSV(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
-    		st.setInt(1, SKY_NETWORK_ID);
-    		st.setString(2, campaign.getName());
-        	st.setString(3, campaign.getLine1());
-            st.setString(4, campaign.getLine2());
-            st.setString(5, null);
-            st.setString(6, campaign.getDps1());
-            st.setString(7, campaign.getDps2());
-            st.setString(8, campaign.getDps3());
-            st.setString(9, campaign.getDps4());
-            st.setString(10, campaign.getDps5());
-            st.setString(11, campaign.getDps6());
-            st.setString(12, campaign.getDps7());
-            st.setString(13, campaign.getDps8());
-            st.setString(14, IMAGENAME);
-            st.setString(15, campaign.getImageHash());
+    		//st.setInt(1, SKY_NETWORK_ID);
+    		st.setString(1, campaign.getName());
+        	st.setString(2, campaign.getLine1());
+            st.setString(3, campaign.getLine2());
+            st.setString(4, null);
+            st.setString(5, campaign.getDps1());
+            st.setString(6, campaign.getDps2());
+            st.setString(7, campaign.getDps3());
+            st.setString(8, campaign.getDps4());
+            st.setString(9, campaign.getDps5());
+            st.setString(10, campaign.getDps6());
+            st.setString(11, campaign.getDps7());
+            st.setString(12, campaign.getDps8());
+            st.setString(13, IMAGENAME);
+            st.setString(14, campaign.getImageHash());
+            
+            st.registerOutParameter(15, Types.INTEGER);
+            st.setInt(15, campaign.getId());
             
             st.registerOutParameter(16, Types.INTEGER);
-            st.setInt(16, campaign.getId());
-            
-            st.registerOutParameter(17, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return new int[] {st.getInt(16), st.getInt(17)}; 
+            return new int[] {st.getInt(15), st.getInt(16)}; 
 		}
         catch(SQLException ex)
         {

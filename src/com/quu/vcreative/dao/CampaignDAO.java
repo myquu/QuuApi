@@ -183,7 +183,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	    }
         catch(SQLException ex)
         {
-        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStations " + ex.getMessage());
+        	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStations poid=" + POID + "  id=" + id + "  " + ex.getMessage());
         }
 		
 		return null;

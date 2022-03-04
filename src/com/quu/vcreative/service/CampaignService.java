@@ -186,6 +186,7 @@ public class CampaignService implements ICampaignService{
 	    	 * 5. Sets the order and campaign to active.
 	    	 * Returns the status, advertiser id, item id, start date and end date for use later.
 	    	 */
+	    	//TBD: Check that carts exist and after Deleting all non numeric characters from them they are not empty. Do this before the below call
 	    	CampaignStationDetail detail = campaignDAO.assignStations(campaignStation.getVC_POID(), campaignStation.getId(), station_ids);
 	    	
 	    	//If its a VC campaign
@@ -195,9 +196,20 @@ public class CampaignService implements ICampaignService{
 	    		{
 	    			List<String> scrubbedCartList = new ArrayList<String>();  
 		    		
-	    			//Delete all non numeric characters from carts
-		    		stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
+	    			//stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
 	    			
+		    		//Delete all non numeric characters from carts
+		    		for(String scrubbedCart : stationCarts.getCartList())
+		    		{
+		    			scrubbedCart = scrubbedCart.replaceAll("\\D", "");
+		    			
+		    			//Weed out empty cart strings
+		    			if(scrubbedCart != "")
+		    			{
+		    				scrubbedCartList.add(scrubbedCart);
+		    			}
+		    		}
+		    		
 	    			campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), String.join(",", scrubbedCartList));
 	    		}
 	    		

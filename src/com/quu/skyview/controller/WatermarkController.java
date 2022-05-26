@@ -6,13 +6,16 @@ import java.util.Map;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.quu.skyview.model.CampaignWatermarks;
+import com.quu.skyview.model.Watermark;
 import com.quu.skyview.service.IWatermarkService;
 
 @RequestScoped
@@ -50,15 +53,17 @@ public class WatermarkController {
 			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 	
-	@POST
+	@GET
 	@Path("/audit")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response audit(List<String> campaignIds)
+	public Response audit()
 	{
-		Map<String, List<String>> campaignsWatermarks = watermarkService.audit(campaignIds);
+		Map<Integer, List<Watermark>> campaignsWatermarks = watermarkService.audit();
 		
-		return Response.status(Response.Status.OK).entity(campaignsWatermarks).build();
+		if(campaignsWatermarks != null)
+			return Response.status(Response.Status.OK).entity(campaignsWatermarks).build();
+		else
+			return Response.status(Response.Status.NO_CONTENT).build();
 	}
 
 }

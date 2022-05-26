@@ -46,7 +46,7 @@ public class TriggerController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response process(Trigger trigger)
 	{
-		System.out.println("Received trigger: " + trigger.getEventId());
+		//System.out.println("Received trigger: " + trigger.getEventId());
 		
 		int status = triggerService.process(trigger);
 		

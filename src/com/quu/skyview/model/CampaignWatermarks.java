@@ -23,6 +23,6 @@ public class CampaignWatermarks {
 	private int id;
 	
 	@JsonProperty("QIds")
-	private List<String> QIds;
+	private List<Watermark> watermarkList;
 	
 }

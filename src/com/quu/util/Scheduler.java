@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.quu.dao.QuuDAO;
 import com.quu.model.Station;
+import com.quu.model.StationMaps;
 
 
 public class Scheduler 
@@ -18,8 +19,7 @@ public class Scheduler
 	//@Inject
     //private static IQuuService quuService;
 	
-	//Key: callLetters, Value: Station obj
-	public static Map<String, Station> StationMap;
+	public static StationMaps stationMaps;
 	
 	//Refresh the cached data every 24 hours.
     
@@ -39,7 +39,8 @@ public class Scheduler
     	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     	scheduler.scheduleAtFixedRate(() -> {
     		
-    		StationMap = new QuuDAO().getStations();
+    		stationMaps = new QuuDAO().getStations();
+    		    		 
     		//System.out.println("QuuAPI cache refreshed!");
     	}, initialDelay, 24*60, TimeUnit.MINUTES);
     	

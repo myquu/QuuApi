@@ -1,9 +1,11 @@
 package com.quu.skyview.service;
 
+
 import java.util.List;
 import java.util.Map;
 
 import com.quu.skyview.model.CampaignWatermarks;
+import com.quu.skyview.model.Watermark;
 
 public interface IWatermarkService {
 
@@ -11,5 +13,5 @@ public interface IWatermarkService {
 	
 	public int unassign(CampaignWatermarks campaignWatermarks);
 	    	
-	public Map<String, List<String>> audit(List<String> campaignIds);
+	public Map<Integer, List<Watermark>> audit();
 }

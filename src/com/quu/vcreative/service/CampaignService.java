@@ -152,12 +152,14 @@ public class CampaignService implements ICampaignService{
     	
     	List<StationCart> partneredStationCartList = new ArrayList<>();  
 		    		
+    	Map<String, Station> stationMap = Scheduler.stationMaps.getStationMap();
+    	
     	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
     	{
     		String callLetters = stationCarts.getStation();
     		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
     		
-    		Station station = Scheduler.StationMap.get(callLetters);
+    		Station station = stationMap.get(callLetters);
     		
     		//Partnered station
     		if(station != null)
@@ -234,12 +236,14 @@ public class CampaignService implements ICampaignService{
     	//If its a VC campaign
     	if(ret == 1)
     	{
+    		Map<String, Station> stationMap = Scheduler.stationMaps.getStationMap();
+    		
 	    	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
 	    	{
 	    		String callLetters = stationCarts.getStation();
 	    		callLetters = callLetters.toUpperCase().replaceFirst("-FM$", "");
 	    		
-	    		Station station = Scheduler.StationMap.get(callLetters);
+	    		Station station = stationMap.get(callLetters);
 	    		
 	    		//Partnered station
 	    		if(station != null)

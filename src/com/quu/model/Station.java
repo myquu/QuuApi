@@ -17,4 +17,5 @@ public class Station
 	private int id;
     private String callLetters;
     private String tzName;
+    private String groupCode;
 }

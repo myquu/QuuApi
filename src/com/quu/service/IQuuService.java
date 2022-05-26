@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.quu.model.Station;
+import com.quu.model.StationMaps;
 
 public interface IQuuService {
 
-	public Map<String, Station> getStations();
+	public StationMaps getStations();
 	
 }

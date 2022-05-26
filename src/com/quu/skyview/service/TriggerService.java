@@ -98,11 +98,19 @@ public class TriggerService implements ITriggerService{
     	
     	if(stationIdList != null)
     	{
+    		Map<Integer, Station> stationIdMap = Scheduler.stationMaps.getStationIdMap();
     		String dataF = data;
-    		
+    		    		
     		for(int stationId : stationIdList)
     		{
-    			new Thread(() -> AblyUtil.publish("Skyview", "NetworkTrigger:"+stationId, dataF)).start();
+    			Station station = stationIdMap.get(stationId);
+    			
+    			if(station != null)
+    			{
+	    			String stationGroupCode = station.getGroupCode(); 
+	    			//new Thread(() -> AblyUtil.publish("Skyview", "NetworkTrigger:"+stationId, dataF)).start();
+	    			new Thread(() -> AblyUtil.publish("Skyview", stationGroupCode, dataF)).start();
+    			}
     		}
     	}
     	

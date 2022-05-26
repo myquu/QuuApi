@@ -187,6 +187,23 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     	return null;
     }
 	
+	public void active(int id)
+	{
+		try(
+				Connection conn = getBusinessDBConnection();
+    			PreparedStatement st = conn.prepareStatement("update qb_network_campaigns set is_active = 1, indelible = 1 where id = ?");
+			)
+        {
+        	st.setInt(1, id);
+        	       	
+            st.executeUpdate();
+        }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "SkyviewApp:CampaignDAO active " + ex.getMessage());
+        }
+	}
+	
 	/**
 	 * Deletes or deactivates.
      * Returns 1 - delete successful (OK), -1 - Nothing got deleted.

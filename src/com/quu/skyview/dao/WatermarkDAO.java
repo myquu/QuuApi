@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,79 +15,81 @@ import javax.enterprise.context.RequestScoped;
 
 import com.quu.dao.BaseDAO;
 import com.quu.skyview.model.Campaign;
+import com.quu.skyview.model.Watermark;
 import com.quu.util.Constant;
 
 @RequestScoped
 public class WatermarkDAO extends BaseDAO implements IWatermarkDAO{
 
-	public int assign(int campaignId, String watermarkIds) 
+	public void assign(int campaignId, String watermarkId, int duration) 
 	{
 		try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call AssignWatermarkIdsToCampaignSV(?,?,?)");
+				PreparedStatement st = conn.prepareStatement("insert into qb_network_campaigns_watermarks(campaign_id, watermark_id, duration) values(?,?,?)");
 			)
         {
     		st.setInt(1, campaignId);
-        	st.setString(2, watermarkIds);
-            
-            st.registerOutParameter(3, Types.INTEGER);
-            
+        	st.setString(2, watermarkId);
+        	st.setInt(3, duration);
+        	
             st.executeUpdate();
-	        
-            return st.getInt(3); 
-		}
+	    }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "SkyviewApp:WatermarkDAO assign " + ex.getMessage());
         }
-		
-		return -1;
 	}
 	
-	public int unassign(int campaignId, String watermarkIds)
+	public void unassign(int campaignId, String watermarkIds)
 	{
 		try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call UnassignWatermarkIdsFromCampaignSV(?,?,?)");
+    			CallableStatement st = conn.prepareCall("call UnassignWatermarkIdsFromCampaignSV(?,?)");
 			)
         {
     		st.setInt(1, campaignId);
         	st.setString(2, watermarkIds);
             
-            st.registerOutParameter(3, Types.INTEGER);
-            
             st.executeUpdate();
-	        
-            return st.getInt(3); 
-		}
+        }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "SkyviewApp:WatermarkDAO unassign " + ex.getMessage());
         }
-		
-		return -1;
 	}
 	
-	public List<String> audit(String campaignId)
+	public Map<Integer, List<Watermark>> audit()
 	{
 		try(
     			Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select watermark_id from qb_network_campaigns_watermarks where campaign_id = ?");
+    			PreparedStatement st = conn.prepareStatement("select distinct campaign_id, watermark_id, duration from qb_network_campaigns_watermarks order by 1");
 			)
         {
-    		st.setString(1, campaignId);
-        	            
     		try(ResultSet rs = st.executeQuery();)
     		{
 		        if(rs.next())
 		        {
-		        	List<String> list = new ArrayList<>();
+		        	Map<Integer, List<Watermark>> map = new HashMap<>();
 		        	
 		            do {
-		            	list.add(rs.getString(1)); 
+		            	int campaignId = rs.getInt(1);
+		            	
+		            	List<Watermark> list = map.get(campaignId);
+		            	
+		            	if(list == null)
+		            	{
+		            		list = new ArrayList<>();
+		            		list.add(new Watermark(rs.getString(2), rs.getInt(3)));
+		            		
+		            		map.put(campaignId, list);
+		            	}
+		            	else
+		            	{
+		            		list.add(new Watermark(rs.getString(2), rs.getInt(3)));
+		            	}
 		            }while(rs.next());
 		            
-		            return list;
+		            return map;
 		        }
     		}
 	    }

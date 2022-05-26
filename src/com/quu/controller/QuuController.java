@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.quu.model.Station;
+import com.quu.model.StationMaps;
 import com.quu.service.IQuuService;
 import com.quu.util.Util;
 
@@ -29,7 +30,9 @@ public class QuuController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStations() 
 	{
-		Map<String, Station> stationMap = quuService.getStations();
+		StationMaps stationMaps = quuService.getStations();
+		
+		Map<String, Station> stationMap = stationMaps.getStationMap();
 		
 		List<Station> stationList = new ArrayList<>();
 		

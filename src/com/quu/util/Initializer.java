@@ -19,7 +19,7 @@ public class Initializer implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
 		
-		Scheduler.StationMap = quuService.getStations();
+		Scheduler.stationMaps = quuService.getStations();
 		//System.out.println("QuuAPI Stations: " + Scheduler.Stations.size());   
 		
 	}

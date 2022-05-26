@@ -1,13 +1,16 @@
 package com.quu.skyview.dao;
 
+
 import java.util.List;
 import java.util.Map;
 
+import com.quu.skyview.model.Watermark;
+
 public interface IWatermarkDAO {
 
-	public int assign(int campaignId, String watermarkIds);
+	public void assign(int campaignId, String watermarkIds, int duration);
 	
-	public int unassign(int campaignId, String watermarkIds);
+	public void unassign(int campaignId, String watermarkIds);
 	    	
-	public List<String> audit(String campaignIds);
+	public Map<Integer, List<Watermark>> audit();
 }

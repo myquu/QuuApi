@@ -19,6 +19,7 @@ public class Scheduler
 	//@Inject
     //private static IQuuService quuService;
 	
+	static ScheduledExecutorService executor;
 	public static StationMaps stationMaps;
 	
 	//Refresh the cached data every 24 hours.
@@ -36,15 +37,13 @@ public class Scheduler
     		initialDelay = LocalDateTime.now().until(NinePMCurrentDay.plusDays(1), ChronoUnit.MINUTES);
     	}
     		
-    	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    	scheduler.scheduleAtFixedRate(() -> {
+    	executor = Executors.newScheduledThreadPool(1);
+    	executor.scheduleAtFixedRate(() -> {
     		
     		stationMaps = new QuuDAO().getStations();
     		    		 
     		//System.out.println("QuuAPI cache refreshed!");
     	}, initialDelay, 24*60, TimeUnit.MINUTES);
-    	
-    	//scheduler.shutdown();
     }
 	
 }

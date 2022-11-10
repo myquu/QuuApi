@@ -23,7 +23,7 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     {
     	try(
 				Connection conn = getBusinessDBConnection();
-				PreparedStatement st = conn.prepareStatement("SELECT rs.id, rs.call_letters, tz.Name, rsg.code "
+				PreparedStatement st = conn.prepareStatement("SELECT rs.id, rs.call_letters, rs.package, tz.Name, rsg.code "
 						+ "FROM qb_radio_stations rs "
 						+ "JOIN qb_radio_station_subgroups rss on(rs.radio_station_subgroup_id = rss.id) "
 						+ "JOIN qb_radio_station_groups rsg on(rss.radio_station_group_id = rsg.id) "
@@ -38,12 +38,13 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
 		        	Map<Integer, Station> stationIdMap = new HashMap<>();
 		        	
 		            do {
+		            	int id = rs.getInt(1);
 		            	String callLetters = rs.getString(2);
 		            	
 		            	//Unique station per row
-		            	stationMap.put(callLetters, new Station(rs.getInt(1), callLetters, rs.getString(3), rs.getString(4)));
+		            	stationMap.put(callLetters, new Station(id, callLetters, rs.getInt(3), rs.getString(4), rs.getString(5)));
 		            	
-		            	stationIdMap.put(rs.getInt(1), new Station(rs.getInt(1), callLetters, rs.getString(3), rs.getString(4)));
+		            	stationIdMap.put(id, new Station(id, callLetters, rs.getInt(3), rs.getString(4), rs.getString(5)));
 		            }while(rs.next());
 		            
 		            return new StationMaps(stationMap, stationIdMap);

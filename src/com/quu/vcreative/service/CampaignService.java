@@ -148,7 +148,8 @@ public class CampaignService implements ICampaignService{
     {
     	String status = "0"; //Invalid PO id or line item id
     	
-    	String station_ids = "", unpartneredStations = "";
+    	String station_ids = "",  //These are ids of assignable stations
+    			unpartneredStations = "";
     	
     	List<StationCart> partneredStationCartList = new ArrayList<>();  
 		    		
@@ -161,8 +162,8 @@ public class CampaignService implements ICampaignService{
     		
     		Station station = stationMap.get(callLetters);
     		
-    		//Partnered station
-    		if(station != null)
+    		//Assign only if its a partnered station with Advertiser(3) or Advertiser unlimited(4) package level. 
+    		if(station != null && (station.getPackage1() == 3 || station.getPackage1() == 4))
     		{
     			station_ids += station.getId() + ",";
 	    		
@@ -175,7 +176,7 @@ public class CampaignService implements ICampaignService{
     		}
     	}
     	
-    	//If there are partnered stations
+    	//If there are assignable stations
     	if(!station_ids.isEmpty())
     	{
 	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma

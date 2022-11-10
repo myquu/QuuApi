@@ -16,6 +16,7 @@ public class Station
 {
 	private int id;
     private String callLetters;
+    private int package1;
     private String tzName;
     private String groupCode;
 }

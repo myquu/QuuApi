@@ -26,6 +26,9 @@ public class Initializer implements ServletContextListener {
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-				
+		
+		//System.out.println("QuuAPI Shutting down!!");
+		Scheduler.executor.shutdown();
+		
 	}
 }

@@ -28,7 +28,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	//Now the campaigns can be linked with both stations and watermarks.
 	//private static final int SKY_NETWORK_ID = 2;
 	
-	//Returns all campaigns that were never activated or those that are currently active.
+	//Returns all campaigns that were never activated or those that are currently active. Only returns campaigns created through the /save endpoint.
 	public List<Campaign> getAll(String IMAGENAME)
     {
     	try(
@@ -36,7 +36,8 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) order by c.id desc");
+						+ "where c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
+						+ "order by c.id desc");
 			)
 		{
     		//st.setInt(1, SKY_NETWORK_ID);
@@ -74,7 +75,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     	return null;
     }
 	
-	//Returns the campaign if it was never activated or if it is currently active.
+	//Returns the campaign if it was never activated or if it is currently active. Only returns campaigns created through the /save endpoint.
 	public Campaign get(int id, String IMAGENAME)
     {
     	try(
@@ -82,7 +83,8 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) and c.id = ?");
+						+ "where c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
+						+ "and c.id = ?");
 			)
 		{
     		//st.setInt(1, SKY_NETWORK_ID);
@@ -115,14 +117,14 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     }
 	
 	/**
-	 * Checks if the campaign is a Sky (network) campaign. 
-	 * This called before add, update, delete, deactivate. For the benefit of "update" we do not put the is_active = 1 check.
+	 * Checks if the campaign was created through the /save endpoint. 
+	 * This called before add, update and delete/deactivate.
 	 */
 	public int campaignExists(int id)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where id = ?");
+    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where id = ? and created_by = " + Constant.APIUserId);
 			)
         {
 			//st.setInt(1, SKY_NETWORK_ID);
@@ -203,7 +205,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
         	System.out.println(new java.util.Date() + "SkyviewApp:CampaignDAO active " + ex.getMessage());
         }
 	}
-	
+		
 	/**
 	 * Deletes or deactivates.
      * Returns 1 - delete successful (OK), -1 - Nothing got deleted.

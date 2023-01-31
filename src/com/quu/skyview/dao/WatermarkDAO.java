@@ -62,7 +62,10 @@ public class WatermarkDAO extends BaseDAO implements IWatermarkDAO{
 	{
 		try(
     			Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select distinct campaign_id, watermark_id, duration from qb_network_campaigns_watermarks order by 1");
+    			PreparedStatement st = conn.prepareStatement("select distinct campaign_id, watermark_id, duration from qb_network_campaigns_watermarks cw "
+    														+ "join qb_network_campaigns c on(cw.campaign_id = c.id) "
+    														+ "where c.created_by = " + Constant.APIUserId 
+    														+ " order by 1");
 			)
         {
     		try(ResultSet rs = st.executeQuery();)

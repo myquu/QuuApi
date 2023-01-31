@@ -14,9 +14,9 @@ public interface ICampaignDAO {
 	public int campaignExists(int id);
 	
 	public int[] save(Campaign campaign, String IMAGENAME);
-
-	public void active(int id);
 	
-    public void delete(int id);
+	public void active(int id);
+
+	public void delete(int id);
     
 }

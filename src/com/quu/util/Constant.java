@@ -31,6 +31,7 @@ public class Constant
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     
+    public static final int APIUserId = 152;
     
     static 
     {

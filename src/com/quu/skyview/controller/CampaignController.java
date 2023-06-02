@@ -21,7 +21,7 @@ import com.quu.skyview.service.ICampaignService;
 
 @RequestScoped
 @Path("/campaign")
-public class CampaignController {
+public class CampaignController { 
 	
 	@Inject
     private ICampaignService campaignService;

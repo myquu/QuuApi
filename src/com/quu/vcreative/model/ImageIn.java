@@ -1,5 +1,6 @@
 package com.quu.vcreative.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-
+@JsonIgnoreProperties(ignoreUnknown = true)  //This is so fields passed from controller but not declared here are ignored.
 public class ImageIn {
 
 	@JsonProperty
@@ -23,7 +24,7 @@ public class ImageIn {
 	@JsonProperty("VC_LineItem_ID")
 	private String VC_LineItem_ID;
 	
-	@JsonProperty("Q_LineItem_ID")
+	@JsonProperty("Q_LineItem_ID")  //@JsonProperty("RDS_LineItem_ID")  
 	private int id; 
 	
 	@JsonProperty("VC_imageUrl")

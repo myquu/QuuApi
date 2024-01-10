@@ -20,9 +20,9 @@ public class LineItemOut {
 	@JsonProperty("VC_LineItem_ID")
 	private String VC_LineItem_ID;
 	
-	@JsonProperty("Q_LineItem_ID")
+	@JsonProperty("Q_LineItem_ID")  //@JsonProperty("RDS_LineItem_ID")
 	private int id;  //Line item id
 	
-	@JsonProperty("Q_LineItem_URL")
+	@JsonProperty("Q_LineItem_URL")  //@JsonProperty("RDS_LineItem_URL")
 	private String previewUrl;		
 }

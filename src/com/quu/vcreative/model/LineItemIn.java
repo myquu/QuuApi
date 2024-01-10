@@ -15,10 +15,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(ignoreUnknown = true)  //This is so fields passed from controller but not declared here are ignored.
 public class LineItemIn {
 
-	@JsonProperty("Q_LineItem_ID")
+	@JsonProperty("Q_LineItem_ID")  //@JsonProperty("RDS_LineItem_ID")
 	private int id;  
 	
 	@JsonProperty("VC_LineItem_ID")

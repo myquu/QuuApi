@@ -1,6 +1,6 @@
 package com.quu.model;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +17,12 @@ public class Station
 	private int id;
     private String callLetters;
     private int package1;
-    private String tzName;
+    
+    @JsonProperty("HD")  //Without this it will be deserialised as "hd"
+    private int hd;
+    
+    private String marketName;
+    private String groupName;
     private String groupCode;
+    private String tzName;
 }

@@ -43,8 +43,8 @@ public class CampaignIn {
 	@JsonProperty("VC_PO_name")
 	private String orderName;
 		
-	@JsonProperty("VC_source")
-	private String source;
+	//@JsonProperty("VC_source")
+	//private String source;
 	
 	@JsonProperty("LineItems")
 	private List<LineItemIn> lineItems;

@@ -13,9 +13,9 @@ import lombok.Setter;
 @Setter
 public class CampaignStationOut {
 
-	@JsonProperty("Q_station_not_enabled")
+	@JsonProperty("Q_station_not_enabled")  //@JsonProperty("RDS_station_not_enabled")
 	private String stationsNotEnabled;
-	@JsonProperty("Q_station_req_approval")
+	@JsonProperty("Q_station_req_approval")  //@JsonProperty("RDS_station_req_approval")
 	private String stationsReqApproval;
 	
 }

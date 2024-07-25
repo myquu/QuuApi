@@ -153,7 +153,7 @@ public class CampaignService implements ICampaignService{
     	
     	List<StationCart> partneredStationCartList = new ArrayList<>();  
 		    		
-    	Map<String, Station> stationMap = Scheduler.stationMaps.getStationMap();
+    	Map<String, Station> stationMap = Scheduler.stationMaps.getStationCallLettersMap();
     	
     	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
     	{
@@ -237,7 +237,7 @@ public class CampaignService implements ICampaignService{
     	//If its a VC campaign
     	if(ret == 1)
     	{
-    		Map<String, Station> stationMap = Scheduler.stationMaps.getStationMap();
+    		Map<String, Station> stationMap = Scheduler.stationMaps.getStationCallLettersMap();
     		
 	    	for(StationCart stationCarts : campaignStation.getStationCartList()) //for each station
 	    	{

@@ -19,12 +19,20 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)  //This is so fields passed from controller but not declared here are ignored.
 public class Campaign {
 
+	@JsonProperty("SkyviewID")
+	private int skyviewId;
+	@JsonProperty("AdTrackingId")
+	private String adTrackingId;
+	@JsonProperty("Advertiser")
+	private String advertiser;
 	@JsonProperty("ID")
 	private int id;
-	//@JsonProperty("SkyviewID")
-	//private int SkyviewID;
 	@JsonProperty("Name")
 	private String name;
+	@JsonProperty("StartDate")
+	private String startDate;
+	@JsonProperty("EndDate")
+	private String endDate;
 	@JsonProperty("Line1")
 	private String line1;
 	@JsonProperty("Line2")
@@ -32,8 +40,6 @@ public class Campaign {
 	//Image is a Base64String POSTed to us. It is not sent out.
 	@JsonProperty(value = "Image", access = Access.WRITE_ONLY)  //the property may only be written (set) for deserialization, but will not be read (get) on serialization, that is, the value of the property is not included in output JSON.
 	private String image;
-	@JsonProperty("ImageHash")
-	private String imageHash;
 	//The image url is not POSTed. It is only included in output JSON i.e. it will be serialized.
 	@JsonProperty(value = "ImageUrl", access = Access.READ_ONLY)  
 	private String imageUrl;
@@ -41,7 +47,7 @@ public class Campaign {
 	//The image name is not passed from controller. It is a constant file name that will be saved only if image param comes with a value from controller.
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String imageName;
-	//The 8 dps fields are not passed from controller. 
+	//The 8 dps fields are not passed from controller. Neither are they sent out.
 	private String dps1;
 	private String dps2;
 	private String dps3;

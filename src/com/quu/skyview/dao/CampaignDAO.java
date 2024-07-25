@@ -33,10 +33,12 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
 				Connection conn = getBusinessDBConnection();
-				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
+				PreparedStatement st = conn.prepareStatement("select s.SV_id, c.adTrackingId, c.advertiser_name, c.id, c.name, c.start_date, c.end_date, "
+						+ "r.rt1, r.rt2, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8, r.logo "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
+						+ "join skyview.sv_campaign_mapping s on(c.id = s.campaign_id) "
+						+ "where c.network_id = 2 and c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
 						+ "order by c.id desc");
 			)
 		{
@@ -49,18 +51,17 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		        	List<Campaign> list = new ArrayList<>();
 		        	
 		            do {
-		            	int id = rs.getInt(1);
-		            	String image_hash = rs.getString(5),
+		            	int id = rs.getInt(4);
+		            	String image = rs.getString(18),
 	            			imageUrl = null;
 		            	
-		            	//If image hash is present, we would have created the image on image server. Return its URL.
-		            	if(image_hash != null)
+		            	if(image != null)
 		            	{
-		            		imageUrl = Constant.IMAGES_DIR_URL + "/networkcampaign_images/" + id + "/logo/" + IMAGENAME;
+		            		imageUrl = Constant.IMAGES_DIR_URL + "/networkcampaign_images/" + id + "/logo/" + image;
 		            	}
 		            	
-		            	list.add(new Campaign(id, rs.getString(2), rs.getString(3), rs.getString(4), null, image_hash, imageUrl, IMAGENAME,
-		            			rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13))); 
+		            	list.add(new Campaign(rs.getInt(1), rs.getString(2), rs.getString(3), id, rs.getString(5), rs.getString(6), rs.getString(7), 
+		            			rs.getString(8), rs.getString(9), null, imageUrl, IMAGENAME, rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13), rs.getString(14), rs.getString(15), rs.getString(16), rs.getString(17))); 
 		            }while(rs.next());
 		            
 		            return list;
@@ -80,10 +81,12 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-				PreparedStatement st = conn.prepareStatement("select c.id, c.name, r.rt1, r.rt2, r.image_hash, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8 "
+				PreparedStatement st = conn.prepareStatement("select s.SV_id, c.adTrackingId, c.advertiser_name, c.id, c.name, c.start_date, c.end_date, "
+						+ "r.rt1, r.rt2, r.dps1, r.dps2, r.dps3, r.dps4, r.dps5, r.dps6, r.dps7, r.dps8, r.logo "
 						+ "from qb_network_campaigns c "
 						+ "join qb_network_campaign_rds r on(c.id = r.campaign_id) "
-						+ "where c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
+						+ "join skyview.sv_campaign_mapping s on(c.id = s.campaign_id) "
+						+ "where c.network_id = 2 and c.created_by = " + Constant.APIUserId + " and ((c.is_active = 0 and c.indelible = 0) or c.is_active = 1) "
 						+ "and c.id = ?");
 			)
 		{
@@ -94,17 +97,16 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     		{
 		        if(rs.next())
 		        {
-		        	String image_hash = rs.getString(5),
-	        			imageUrl = null;
+		        	String image = rs.getString(18),
+            			imageUrl = null;
 	            	
-	            	//If image hash is present, we would have created the image on image server. Return its URL.
-	            	if(image_hash != null)
+	            	if(image != null)
 	            	{
 	            		imageUrl = Constant.IMAGES_DIR_URL + "/networkcampaign_images/" + id + "/logo/" + IMAGENAME;
 	            	}
 		        	
-		        	return new Campaign(id, rs.getString(2), rs.getString(3), rs.getString(4), null, image_hash, imageUrl, IMAGENAME,
-	            			rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13));
+		        	return new Campaign(rs.getInt(1), rs.getString(2), rs.getString(3), id, rs.getString(5), rs.getString(6), rs.getString(7), 
+	            			rs.getString(8), rs.getString(9), null, imageUrl, IMAGENAME, rs.getString(10), rs.getString(11), rs.getString(12), rs.getString(13), rs.getString(14), rs.getString(15), rs.getString(16), rs.getString(17));
 		        }
     		}
 	    }
@@ -124,7 +126,7 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where id = ? and created_by = " + Constant.APIUserId);
+    			PreparedStatement st = conn.prepareStatement("select 1 from qb_network_campaigns where network_id = 2 and id = ? and created_by = " + Constant.APIUserId);
 			)
         {
 			//st.setInt(1, SKY_NETWORK_ID);
@@ -153,33 +155,36 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call SaveNetworkCampaignSV(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call SaveNetworkCampaignSV(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
-    		//st.setInt(1, SKY_NETWORK_ID);
-    		st.setString(1, campaign.getName());
-        	st.setString(2, campaign.getLine1());
-            st.setString(3, campaign.getLine2());
-            st.setString(4, null);
-            st.setString(5, campaign.getDps1());
-            st.setString(6, campaign.getDps2());
-            st.setString(7, campaign.getDps3());
-            st.setString(8, campaign.getDps4());
-            st.setString(9, campaign.getDps5());
-            st.setString(10, campaign.getDps6());
-            st.setString(11, campaign.getDps7());
-            st.setString(12, campaign.getDps8());
-            st.setString(13, IMAGENAME);
-            st.setString(14, campaign.getImageHash());
+    		st.setInt(1, campaign.getSkyviewId());
+    		st.setString(2, campaign.getAdTrackingId());
+    		st.setString(3, campaign.getAdvertiser());
+    		st.setString(4, campaign.getName());
+    		st.setString(5, campaign.getStartDate());
+            st.setString(6, campaign.getEndDate());
+    		st.setString(7, campaign.getLine1());
+            st.setString(8, campaign.getLine2());
+            st.setString(9, null);
+            st.setString(10, campaign.getDps1());
+            st.setString(11, campaign.getDps2());
+            st.setString(12, campaign.getDps3());
+            st.setString(13, campaign.getDps4());
+            st.setString(14, campaign.getDps5());
+            st.setString(15, campaign.getDps6());
+            st.setString(16, campaign.getDps7());
+            st.setString(17, campaign.getDps8());
+            st.setString(18, IMAGENAME);
+                        
+            st.registerOutParameter(19, Types.INTEGER);
+            st.setInt(19, campaign.getId());
             
-            st.registerOutParameter(15, Types.INTEGER);
-            st.setInt(15, campaign.getId());
-            
-            st.registerOutParameter(16, Types.INTEGER);
+            st.registerOutParameter(20, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return new int[] {st.getInt(15), st.getInt(16)}; 
+            return new int[] {st.getInt(19), st.getInt(20)}; 
 		}
         catch(SQLException ex)
         {

@@ -15,7 +15,8 @@ import lombok.ToString;
 public class Station
 {
 	private int id;
-    private String callLetters;
+	private String sid;
+	private String callLetters;
     private int package1;
     
     @JsonProperty("HD")  //Without this it will be deserialised as "hd"

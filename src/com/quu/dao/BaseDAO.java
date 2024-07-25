@@ -50,7 +50,27 @@ public class BaseDAO
         
         return null;
     }
-   
+    
+    protected Connection getReportsDBConnection()
+    {
+        try
+        {
+            Context initial = new InitialContext();
+            DataSource ds = (DataSource)initial.lookup("java:jboss/datasources/MySqlReportsDS");
+            return ds.getConnection();
+        }
+        catch(NamingException ex)
+        {
+            System.out.println("NamingException: " + ex.getMessage());
+        }
+        catch(SQLException ex)
+        {
+            System.out.println("SQLException: " + ex.getMessage());
+        }
+        
+        return null;
+    }
+    
     protected void closeAll(Statement st, Connection conn)
     {
         try

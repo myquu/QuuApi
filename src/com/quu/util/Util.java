@@ -9,6 +9,9 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import org.apache.http.NameValuePair;
@@ -217,6 +220,26 @@ public class Util
     	}
     	
     	return null;
+    }
+    
+    public static ZonedDateTime getDateDetail(LocalDateTime dateTime, String sourceTz, String destTz)
+    {
+    	ZonedDateTime sourceDateTime = null,
+			destDateTime = null;
+    	
+    	if(dateTime == null)
+    		sourceDateTime = ZonedDateTime.now();
+		else
+		{
+			if(sourceTz == null)
+				sourceTz = TimeZone.getDefault().getID();
+				
+			sourceDateTime = ZonedDateTime.of(dateTime, ZoneId.of(sourceTz));
+		}
+    	
+    	destDateTime = sourceDateTime.withZoneSameInstant(ZoneId.of(destTz)); 
+        
+        return destDateTime;
     }
     
     public static void logQueryString(String message)

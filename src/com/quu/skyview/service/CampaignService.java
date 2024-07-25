@@ -73,31 +73,34 @@ public class CampaignService implements ICampaignService{
     		catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
     	}
     	
-    	int[] ret = campaignDAO.save(campaign, IMAGENAME);
+    	int[] ret = campaignDAO.save(campaign, (campaign.getImage() != null ? IMAGENAME : null));
     	
     	if(ret != null)
     	{
     		int id = ret[0],
 				active = ret[1];
-    		    		
-	    	new Thread(() -> {
-		    	
-	    		//Handle image base64 to url conversion and save on imageserver. Now a campaign image will not be deleted or deleted anymore so we don't need the imageHash property.
-	    		Map<String, String> params = new HashMap<String, String>();
-	    		params.put("imagePath", "networkcampaign_images/" + id + "/logo");
-	    		params.put("fileName", IMAGENAME);
-	    		params.put("base64String", campaign.getImage());
-	    		params.put("requestFrom", "QuuAPI");
-	    		
-	    		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
-	    		
-	    		//active status
-	    		if(active == 1)
-		    	{
-		    		Util.clearQuuRDSCache();
-		    	}
-	    		
-		    }).start();
+    		
+    		if(campaign.getImage() != null)
+    		{
+		    	new Thread(() -> {
+			    	
+		    		//Handle image base64 to url conversion and save on imageserver. Now a campaign image will not be deleted or deleted anymore so we don't need the imageHash property.
+		    		Map<String, String> params = new HashMap<String, String>();
+		    		params.put("imagePath", "networkcampaign_images/" + id + "/logo");
+		    		params.put("fileName", IMAGENAME);
+		    		params.put("base64String", campaign.getImage());
+		    		params.put("requestFrom", "QuuAPI");
+		    		
+		    		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
+		    				    		
+			    }).start();
+    		}
+    		
+    		//active status.
+    		if(active == 1)
+	    	{
+	    		new Thread(() -> Util.clearQuuRDSCache()).start();
+	    	}
 	    	    		   		
 	    	return id;
     	}

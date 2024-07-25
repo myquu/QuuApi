@@ -10,9 +10,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.quu.model.RTLog;
 import com.quu.model.Station;
 import com.quu.model.StationMaps;
 import com.quu.service.IQuuService;
@@ -32,7 +34,7 @@ public class QuuController {
 	{
 		StationMaps stationMaps = quuService.getStations();
 		
-		Map<String, Station> stationMap = stationMaps.getStationMap();
+		Map<String, Station> stationMap = stationMaps.getStationCallLettersMap();
 		
 		List<Station> stationList = new ArrayList<>();
 		
@@ -42,7 +44,18 @@ public class QuuController {
 			stationList.add(station);
 		}
 		
-		return Response.status(Response.Status.OK).entity(stationList).build();
+		return Response.status(Response.Status.OK).entity(stationList).build(); 
+	}
+	
+	//Gets the top 3 logs for every station in the system.
+	@GET
+	@Path("/RTLogs")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getRTLogs(@QueryParam("sid") String sid) 
+	{
+		List<RTLog> log = quuService.getStationRTLogs(sid);
+		
+		return Response.status(Response.Status.OK).entity(log).build();
 	}
 	
 	@POST

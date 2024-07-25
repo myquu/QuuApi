@@ -13,9 +13,11 @@ import lombok.Setter;
 @Setter
 public class StationMaps {
 
-	//Key: callLetters, Value: Station obj
-	private Map<String, Station> StationMap;
 	//Key: Id, Value: Station obj
 	private Map<Integer, Station> StationIdMap;
-	
+	//Key: sid, Value: Station obj
+	private Map<String, Station> StationSidMap;
+	//Key: callLetters, Value: Station obj
+	private Map<String, Station> StationCallLettersMap;
+		
 }

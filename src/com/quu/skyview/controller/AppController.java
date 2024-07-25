@@ -16,9 +16,10 @@ public class AppController extends Application {
 		Set<Class<?>> resources = new HashSet<>();
         
 		resources.add(CampaignController.class);
-		resources.add(ScheduleController.class);
-		resources.add(TriggerController.class);
+		//resources.add(ScheduleController.class);
+		//resources.add(TriggerController.class);
 		resources.add(WatermarkController.class);
+		resources.add(CartController.class);  //This is self sufficient
 		
         return resources;
 		

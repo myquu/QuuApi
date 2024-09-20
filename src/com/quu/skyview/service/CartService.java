@@ -3,6 +3,7 @@ package com.quu.skyview.service;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,9 +24,9 @@ public class CartService implements ICartService{
 		
 	
 	@Override
-    public List<StationCart> getSchedules(int stationId) {
+    public HashMap<String, List<Segment>> getCartSchedules(int stationId, String date) {
         
-        return cartDAO.getSchedules(stationId);
+        return cartDAO.getCartSchedules(stationId, date);
     }
 	
 	
@@ -59,7 +60,7 @@ public class CartService implements ICartService{
 	*/
 	public int assignStationCartDates(StationCart stationCart) 
 	{				
-		//Create as many records as there are dates between the start and end date including the two.
+		//Create as many records as there are dates between the start and end date including the two dates.
 		LocalDate date = LocalDate.parse(stationCart.getStartDate(), Constant.dateFormatter),  //Its the start date to begin with - either equal to or before the end date but it will change in the loop.
 				endDate = LocalDate.parse(stationCart.getEndDate(), Constant.dateFormatter);
 		
@@ -81,7 +82,7 @@ public class CartService implements ICartService{
 					{
 						campaignIdList.add(segment.getCampaignId());
 						
-						int status = cartDAO.saveStationCartSegment(stationCartId, segment.getOrder(), segment.getCampaignId(), segment.getDuration());
+						int status = cartDAO.saveStationCartSegment(stationCartId, segment.getOrder(), segment.getDuration(), segment.getCampaignId(), segment.getReportingID());
 						
 						if(status == -1)
 						{
@@ -121,7 +122,7 @@ public class CartService implements ICartService{
 				{
 					campaignIdList.add(segment.getCampaignId());
 					
-					int status = cartDAO.saveStationCartSegment(ret, segment.getOrder(), segment.getCampaignId(), segment.getDuration());
+					int status = cartDAO.saveStationCartSegment(ret, segment.getOrder(), segment.getDuration(), segment.getCampaignId(), segment.getReportingID());
 					
 					if(status == -1)
 					{

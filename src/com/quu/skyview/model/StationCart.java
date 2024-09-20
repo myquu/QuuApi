@@ -15,7 +15,7 @@ import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"id"})
+//@EqualsAndHashCode(of = {"id"})  //This is used in cartDAO.getCartSchedules() where it uses indexOf() and indexOf() uses equals().
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -23,6 +23,9 @@ public class Segment {
 	private int duration;
 	@JsonProperty("campaignId")
 	private int campaignId = -1;  //-1 is the default value
+	//The below is for sending affidavits to Skyview. Think of it as their campaign id. Its useless to us.
+	@JsonProperty("ReportingID")
+	private String reportingID;
 	
 	//Internal properties
 	@JsonProperty(access = Access.WRITE_ONLY)

@@ -1,5 +1,6 @@
 package com.quu.skyview.controller;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
@@ -12,10 +13,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.quu.skyview.model.Campaign;
+import com.quu.skyview.model.Segment;
 import com.quu.skyview.model.StationCart;
 import com.quu.skyview.service.ICampaignService;
 import com.quu.skyview.service.ICartService;
@@ -30,11 +33,12 @@ public class CartController {
 	
 	
 	@GET
-	@Path("/{id: \\d+}")
+	@Path("/cartSchedules")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response get(@PathParam("id") int stationId) 
+	//This will return all carts and their schedules for the given station and date combo.
+	public Response getCartSchedules(@QueryParam("stationId") int stationId, @QueryParam("date") String date) 
 	{
-		List<StationCart> entity = cartService.getSchedules(stationId);
+		HashMap<String, List<Segment>> entity = cartService.getCartSchedules(stationId, date);
 		
 		if(entity != null)
 			return Response.status(Response.Status.OK).entity(entity).build();

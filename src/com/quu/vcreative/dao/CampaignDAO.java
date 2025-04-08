@@ -189,11 +189,11 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		return null;
 	}
 	
-	public void assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String carts)
+	public void assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String VC_contractno, String carts)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call AssignStationCartsToCampaignVC(?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call AssignStationCartsToCampaignVC(?,?,?,?,?,?,?,?)");
 			)
         {
 			st.setInt(1, advertiserId);
@@ -202,7 +202,8 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
         	st.setString(4, startDate);
         	st.setString(5, endDate);
         	st.setInt(6, stationId);
-        	st.setString(7, carts);
+        	st.setString(7, VC_contractno);
+        	st.setString(8, carts);
         	
             st.executeUpdate();
         }

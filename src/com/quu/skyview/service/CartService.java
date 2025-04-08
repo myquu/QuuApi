@@ -60,9 +60,16 @@ public class CartService implements ICartService{
 	*/
 	public int assignStationCartDates(StationCart stationCart) 
 	{				
-		//Create as many records as there are dates between the start and end date including the two dates.
+		//Create as many records as dates between the start and end date including the two dates.
 		LocalDate date = LocalDate.parse(stationCart.getStartDate(), Constant.dateFormatter),  //Its the start date to begin with - either equal to or before the end date but it will change in the loop.
 				endDate = LocalDate.parse(stationCart.getEndDate(), Constant.dateFormatter);
+		
+		//If the date range is more than 1 month, truncate it to 1 month
+		if(date.until(endDate, ChronoUnit.DAYS) > 30)
+		{
+			endDate = date.plus(30, ChronoUnit.DAYS);
+		}
+		
 		
 		int ret = 1;  //Will be -1 only if there is an error in inserting any record
 		

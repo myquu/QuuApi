@@ -17,6 +17,11 @@ public interface IQuuDAO {
 	
 	public int createBillboardAndRDSFields(BBCampaign campaign);
 	
-	public int createBillboardSchedules(int id, BBSchedule schedule);
+	public int createBillboardSchedule(int campaignId, BBSchedule schedule);
 	
+	public int deactivateBillboard(int campaignId);
+	
+	public int activateBillboard(int campaignId);
+	
+	public void orderActiveRTCampaigns();
 }

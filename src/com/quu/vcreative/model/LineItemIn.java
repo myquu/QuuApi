@@ -26,7 +26,7 @@ public class LineItemIn {
 	
 	@JsonProperty("VC_campaign")
 	private String name;  //Line item name
-		
+	
 	@JsonProperty("VC_line1")
 	private String line1;
 	
@@ -44,7 +44,6 @@ public class LineItemIn {
 	
 	@JsonProperty("VC_imageUrl")
 	private String imageUrl;
-	
 	//The image name is not passed from controller. It is a constant that will be saved only if image param comes with a value from controller.
 	private String imageName;
 	

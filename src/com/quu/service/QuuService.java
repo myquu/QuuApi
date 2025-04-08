@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ import com.quu.dao.IQuuDAO;
 import com.quu.util.Constant;
 import com.quu.model.BBCampaign;
 import com.quu.model.BBSchedule;
+import com.quu.model.BBSchedules;
 import com.quu.model.RTLog;
 import com.quu.model.Station;
 import com.quu.model.StationMaps;
@@ -46,12 +49,23 @@ public class QuuService implements IQuuService{
 		return quuDAO.getStationRTLogs(station.getId(), stationCurrentDateTime.format(Constant.dateFormatter));
 	}
 	
-	public int createBillboardsAndDependants(List<BBCampaign> campaignList)
+	public List<String> createBillboardsAndDependants(List<BBCampaign> campaignList)
 	{
-		int status = 1;  //Change status to -1 only in case of an error
+		List<String> errantCampaignNames = new ArrayList<String>();
 		
 		for(BBCampaign campaign : campaignList)
 		{
+			int status = 1;  //Change status to -1 only in case of an error during creation of the campaign or its schedule.
+			
+			String imageUrl = campaign.getImageUrl(),
+				imageName = null;
+			
+			if(imageUrl != null)
+        	{
+        		imageName = imageUrl.substring(imageUrl.lastIndexOf("/")+1);
+        		campaign.setImageName(imageName);
+        	}
+			
 			List<String> list = Util.setDPSFields(campaign.getRt1(), campaign.getRt2());
 	    	
 	    	if(list != null)
@@ -69,15 +83,16 @@ public class QuuService implements IQuuService{
 	    		catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {}
 	    	}
 			
-			int id = quuDAO.createBillboardAndRDSFields(campaign);
+			int campaignId = quuDAO.createBillboardAndRDSFields(campaign);
 			
-			if(id != -1)
+			if(campaignId != -1)
 			{
 				for(BBSchedule schedule : campaign.getScheduleList())
 				{
-					int scheduleId = quuDAO.createBillboardSchedules(id, schedule);
+					int scheduleId = quuDAO.createBillboardSchedule(campaignId, schedule);
 					
-					if(scheduleId == -1)
+					//If the times are not in mm:ss format then don't activate the campaign. Else GetJ2GCampaigns() data will throw error and bring the entire system down.
+					if(scheduleId == -1 || !(schedule.getStart_time().matches("^[0-9]{2}:[0-9]{2}$") && schedule.getEnd_time().matches("^[0-9]{2}:[0-9]{2}$")))
 					{
 						status = -1;
 					}
@@ -87,8 +102,83 @@ public class QuuService implements IQuuService{
 			{
 				status = -1;
 			}
+			
+			
+			if(status == 1)
+			{
+				//Copy the image to our imageserver
+				if(imageName != null)
+    	    	{
+    	    		final String imageNameF = imageName;
+    	    		
+    	    		new Thread(() -> saveImageOnImageserver(imageUrl, campaignId, imageNameF)).start();
+    	    	}
+			}
+			//If there was an error in creating the campaign or any of its schedules or any schedule had times in wrong format then deactivate the campaign.
+			else
+			{
+				quuDAO.deactivateBillboard(campaignId);
+				
+				errantCampaignNames.add(campaign.getName());
+			}
+		}
+		
+		
+		//If all campaigns were successfully created (and activated) OR if some of the campaigns were created (and activated) then create the ordering of the (active) campaigns so they can be reordered from the UI later.  
+		new Thread(() -> {
+			if(errantCampaignNames.isEmpty() || errantCampaignNames.size() < campaignList.size())
+			{
+				quuDAO.orderActiveRTCampaigns();
+			}
+		}).start();
+		
+		return errantCampaignNames;
+	}
+	
+	public int createBillboardSchedules(BBSchedules schedules)
+	{
+		int status = 1;  //Change status to -1 only in case of an error during creation of the schedule.
+		
+		int campaignId = schedules.getCampaignID();
+					
+		for(BBSchedule schedule : schedules.getScheduleList())
+		{
+			int scheduleId = quuDAO.createBillboardSchedule(campaignId, schedule);
+			
+			//If the times are not in mm:ss format then don't activate the campaign. Else GetJ2GCampaigns() data will throw error and bring the entire system down.
+			if(scheduleId == -1 || !(schedule.getStart_time().matches("^[0-9]{2}:[0-9]{2}$") && schedule.getEnd_time().matches("^[0-9]{2}:[0-9]{2}$")))
+			{
+				status = -1;
+			}
+		}
+					
+		//If there was an error in creating any of the schedules or any schedule had times in wrong format then deactivate the campaign.
+		if(status == -1)
+		{
+			quuDAO.deactivateBillboard(campaignId);
+		}
+		else
+		{
+			//quuDAO.activateBillboard(campaignId);
+			
+			//If all schedules were successfully created and the campaigns was activated then create the ordering of the (active) campaigns so they can be reordered from the UI later.
+			new Thread(() -> {
+				quuDAO.orderActiveRTCampaigns();
+			}).start();
 		}
 		
 		return status;
 	}
+	
+	
+	private void saveImageOnImageserver(String imageUrl, int id, String imageName)
+    {
+    	Map<String, String> params = new HashMap<String, String>();
+		params.put("downloadFile", imageUrl);
+		params.put("imagePath", "Campaigns/" + id);
+		params.put("fileName", imageName);
+		params.put("requestFrom", "QuuAPI");
+		
+		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
+    }
 }

@@ -15,6 +15,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.quu.model.BBCampaign;
+import com.quu.model.BBSchedule;
+import com.quu.model.BBSchedules;
 import com.quu.model.RTLog;
 import com.quu.model.Station;
 import com.quu.model.StationMaps;
@@ -67,14 +69,29 @@ public class QuuController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createBillboardsAndDependants(List<BBCampaign> campaignList)
 	{
-		int status = quuService.createBillboardsAndDependants(campaignList);
+		List<String> status = quuService.createBillboardsAndDependants(campaignList);
+		
+		if(status.isEmpty())
+			return Response.status(Response.Status.OK).build();
+		else
+			return Response.status(Response.Status.PARTIAL_CONTENT).entity(status).build();
+	}
+	
+	//This is a subset of the above method. Creates schedules for a billboard (whose id is posted) that's already created. There can be multiple schedules each having multiple days, options and stations.
+	//Before making this POST the campaign is created from the UI with a schedule (that includes station) and activated. This means there is at least 1 entry for it qrt_station_campaigns_order table.
+	@POST
+	@Path("/billboardSchedules/add")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response createBillboardSchedules(BBSchedules schedules)
+	{
+		int status = quuService.createBillboardSchedules(schedules);
 		
 		if(status == 1)
 			return Response.status(Response.Status.OK).build();
 		else
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-	}
-		
+			return Response.status(Response.Status.PARTIAL_CONTENT).entity(status).build();
+	}	
 	
 	@POST
 	@Path("/log")

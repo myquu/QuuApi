@@ -23,6 +23,10 @@ public class StationCart {
 	@JsonProperty("carts")
 	private List<String> cartList;
 	
-	//This is not passed from controller. Its used internally
+	@JsonProperty
+	private String VC_contractno;  //Used only for reporting. No logic involved.
+	
+	//These are not passed from controller. They are used internally
 	private int stationId;
+	private String groupCode;
 }

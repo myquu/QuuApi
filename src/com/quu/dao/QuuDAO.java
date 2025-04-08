@@ -112,12 +112,12 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call CreateBillboardAndRDSFields(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call CreateBillboardAndRDSFields(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
     		//Basic campaign
     		st.setString(1, campaign.getName());
-    		st.setNull(2, Types.VARCHAR);
+    		st.setString(2, campaign.getAdvertiser());  //st.setNull(2, Types.VARCHAR);
     		st.setString(3, campaign.getMessage_type());
     		st.setString(4, campaign.getStart_date());
             st.setString(5, campaign.getEnd_date());
@@ -134,12 +134,13 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
             st.setString(15, campaign.getDps6());
             st.setString(16, campaign.getDps7());
             st.setString(17, campaign.getDps8());
-                                    
-            st.registerOutParameter(18, Types.INTEGER);
+            st.setString(18, campaign.getImageName());
+            
+            st.registerOutParameter(19, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return st.getInt(18); 
+            return st.getInt(19); 
 		}
         catch(SQLException ex)
         {
@@ -149,7 +150,7 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     	return -1;
     }
 	
-	public int createBillboardSchedules(int campaignId, BBSchedule schedule)
+	public int createBillboardSchedule(int campaignId, BBSchedule schedule)
     {
     	try(
     			Connection conn = getBusinessDBConnection();
@@ -159,16 +160,16 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     		//Basic campaign
     		st.setInt(1, campaignId);
     		st.setNull(2, Types.INTEGER);  //This is how we set an int column to null
-    		st.setNull(3, Types.VARCHAR);
+    		st.setString(3, schedule.getName());
     		st.setString(4, schedule.getStart_time());
             st.setString(5, schedule.getEnd_time());
             st.setInt(6, schedule.getDuration());
             st.setString(7, String.join(",", schedule.getDay_ids()));
-            st.setString(8, String.valueOf(schedule.getRadio_station_id()));
+            st.setString(8, String.join(",", schedule.getRadio_station_ids()));
             st.setString(9, String.join(",", schedule.getOption_ids()));
             st.setInt(10, 0);
             st.setNull(11, Types.VARCHAR);
-            st.setInt(12, 0);
+            st.setInt(12, schedule.getShow_logo_mus());
             st.setNull(13, Types.VARCHAR);
             st.setInt(14, 0);
             st.setInt(15, 0);
@@ -189,4 +190,56 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
         
     	return -1;
     }
+	
+	public int deactivateBillboard(int campaignId)
+    {
+    	try(
+    			Connection conn = getBusinessDBConnection();
+    			PreparedStatement st = conn.prepareStatement("update qrt_campaigns set is_active = 0 where id = ?");
+			)
+        {
+    		st.setInt(1, campaignId);
+    		st.executeUpdate();
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "NetworkApp:QuuDAO deactivateBillboard " + ex.getMessage());
+        }
+        
+    	return -1;
+    }
+	
+	public int activateBillboard(int campaignId)
+    {
+    	try(
+    			Connection conn = getBusinessDBConnection();
+    			PreparedStatement st = conn.prepareStatement("update qrt_campaigns set is_active = 1, indelible = 1 where id = ?");
+			)
+        {
+    		st.setInt(1, campaignId);
+    		st.executeUpdate();
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "NetworkApp:QuuDAO activateBillboard " + ex.getMessage());
+        }
+        
+    	return -1;
+    }
+	
+	//This calls a "fix" SP that runs over all active campaigns in the database and adds them to the ordering table if not already there.
+	public void orderActiveRTCampaigns()
+	{
+		try(
+    			Connection conn = getBusinessDBConnection();
+				CallableStatement st = conn.prepareCall("call fix_OrderActiveRTCampaigns()");
+			)
+        {
+    		st.executeUpdate();
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "NetworkApp:QuuDAO orderActiveRTCampaigns " + ex.getMessage());
+        }
+	}
 }

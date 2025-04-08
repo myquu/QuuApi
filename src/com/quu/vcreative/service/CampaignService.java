@@ -12,6 +12,8 @@ import java.util.Map;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import com.quu.vcreative.dao.ICampaignDAO;
 import com.quu.vcreative.model.CampaignIn;
 import com.quu.vcreative.model.CampaignOut;
@@ -21,7 +23,9 @@ import com.quu.vcreative.model.ImageIn;
 import com.quu.vcreative.model.LineItemIn;
 import com.quu.vcreative.model.LineItemOut;
 import com.quu.vcreative.model.StationCart;
+import com.quu.dao.IQuuDAO;
 import com.quu.model.Station;
+import com.quu.model.StationMaps;
 import com.quu.util.Constant;
 import com.quu.util.Scheduler;
 import com.quu.util.Util;
@@ -30,6 +34,8 @@ import com.quu.util.Util;
 @RequestScoped
 public class CampaignService implements ICampaignService{
 
+	//We tried to inject IQuuDAO but it didn't work maybe because of its Application scope.
+	
 	@Inject
     private ICampaignDAO campaignDAO;
 		
@@ -51,8 +57,8 @@ public class CampaignService implements ICampaignService{
     		
     		for(LineItemIn lineItemIn : campaignIn.getLineItems())
     		{
-    			String VCImageUrl = lineItemIn.getImageUrl();
-    			String imageName = null;
+    			String VCImageUrl = lineItemIn.getImageUrl(),
+					imageName = null;
     			
     			if(VCImageUrl != null)
 	        	{
@@ -89,6 +95,7 @@ public class CampaignService implements ICampaignService{
 	    				anyActive = true;
 	    			}
 	    			
+	    			//Copy the image to our imageserver
 	    			if(imageName != null)
 	    	    	{
 	    	    		final String imageNameF = imageName;
@@ -149,7 +156,7 @@ public class CampaignService implements ICampaignService{
     	String status = "0"; //Invalid PO id or line item id
     	
     	String station_ids = "",  //These are ids of assignable stations
-    			unpartneredStations = "";
+			unpartneredStations = "", unlicensedStations = "";
     	
     	List<StationCart> partneredStationCartList = new ArrayList<>();  
 		    		
@@ -162,17 +169,37 @@ public class CampaignService implements ICampaignService{
     		
     		Station station = stationMap.get(callLetters);
     		
+    		/*
     		//Assign only if its a partnered station with Advertiser(3) or Advertiser unlimited(4) package level. 
     		if(station != null && (station.getPackage1() == 3 || station.getPackage1() == 4))
     		{
     			station_ids += station.getId() + ",";
 	    		
-	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), station.getId()));
+	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), station.getId(), station.getGroupCode()));
 	    		//campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
     		}
     		else
     		{
     			unpartneredStations += stationCarts.getStation() + ",";
+    		}
+    		*/
+    		//Station is not in Quu
+    		if(station == null)
+    		{
+    			unpartneredStations += stationCarts.getStation() + ",";
+    		}
+    		//Station is in Quu but does not have Adsync license
+    		else if(!ArrayUtils.contains(new int[]{3,4}, station.getPackage1()))
+    		{
+    			unlicensedStations += stationCarts.getStation() + ",";
+    		}
+    		//Station is partnered and licensed for Adsync
+    		else
+    		{
+				station_ids += station.getId() + ",";
+	    		
+	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), stationCarts.getVC_contractno(), station.getId(), station.getGroupCode()));
+	    		//campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
     		}
     	}
     	
@@ -185,8 +212,8 @@ public class CampaignService implements ICampaignService{
 	    	 * 1. Adds the advertiser to the campaign by selecting an existing one or creating a new one.
 	    	 * 2. Assigns new stations to the advertiser(if needed). 
 	    	 * 3. Deletes all station assignments and add anew to the campaign.
-	    	 * 4. Deletes existing rdo campaigns and its spots.
-	    	 * 5. Sets the order and campaign to active.
+	    	 * 4. Deletes existing rdo campaigns (linked to the campaign) and its spots.
+	    	 * 5. Sets the Order and campaign to active.
 	    	 * Returns the status, advertiser id, item id, start date and end date for use later.
 	    	 */
 	    	//TBD: Check that carts exist and after Deleting all non numeric characters from them they are not empty. Do this before the below call
@@ -197,9 +224,7 @@ public class CampaignService implements ICampaignService{
 	    	{
 	    		for(StationCart stationCarts : partneredStationCartList)
 	    		{
-	    			List<String> scrubbedCartList = new ArrayList<String>();  
-		    		
-	    			//stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
+	    			List<String> scrubbedCartList = new ArrayList<String>();
 	    			
 		    		//Delete all non numeric characters from carts
 		    		for(String scrubbedCart : stationCarts.getCartList())
@@ -207,13 +232,19 @@ public class CampaignService implements ICampaignService{
 		    			scrubbedCart = scrubbedCart.replaceAll("\\D", "");
 		    			
 		    			//Weed out empty cart strings
-		    			if(scrubbedCart != "")
+		    			if(!scrubbedCart.isEmpty())
 		    			{
+		    				//Special handling of carts is needed for Cumulus stations. vCreative may or may not send them with leading 0s. We make sure they are 6 digits long by padding with leading zeroes. If its already 6 digits or more we leave it as is.
+		    				if("CU".equals(stationCarts.getGroupCode()))
+				    		{
+		    					scrubbedCart = String.format("%1$6s", scrubbedCart).replace(' ', '0');
+				    		}
+		    				
 		    				scrubbedCartList.add(scrubbedCart);
 		    			}
 		    		}
 		    		
-	    			campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), String.join(",", scrubbedCartList));
+		    		campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), stationCarts.getVC_contractno(), String.join(",", scrubbedCartList));
 	    		}
 	    		
 	    		status = "1";
@@ -222,7 +253,7 @@ public class CampaignService implements ICampaignService{
 	    	}
 	    }
     	
-    	return new String[]{status, unpartneredStations};
+    	return new String[]{status, unpartneredStations, unlicensedStations};
     }
     
     //This method deletes carts from stations within a line item.
@@ -230,7 +261,7 @@ public class CampaignService implements ICampaignService{
     {
     	String status = "0"; //Invalid PO id or line item id
     	
-    	String unpartneredStations = "";
+    	String unpartneredStations = "", unlicensedStations = "";
     	
     	int ret = campaignDAO.campaignExists(campaignStation.getVC_POID(), campaignStation.getId());
     	
@@ -246,8 +277,18 @@ public class CampaignService implements ICampaignService{
 	    		
 	    		Station station = stationMap.get(callLetters);
 	    		
-	    		//Partnered station
-	    		if(station != null)
+	    		//Station is not in Quu
+	    		if(station == null)
+	    		{
+	    			unpartneredStations += stationCarts.getStation() + ",";
+	    		}
+	    		//Station is in Quu but does not have Adsync license
+	    		else if(!ArrayUtils.contains(new int[]{3,4}, station.getPackage1()))
+	    		{
+	    			unlicensedStations += stationCarts.getStation() + ",";
+	    		}
+	    		//Station is partnered and licensed for Adsync
+	    		else 
 	    		{
 	    			List<String> scrubbedCartList = new ArrayList<String>();  
 		    		
@@ -255,10 +296,6 @@ public class CampaignService implements ICampaignService{
 		    		stationCarts.getCartList().forEach(cart -> scrubbedCartList.add(cart.replaceAll("\\D", "")));
 	    			
 	    			campaignDAO.deleteStationsCarts(campaignStation.getVC_POID(), campaignStation.getId(), station.getId(), String.join(",", scrubbedCartList));
-		    	}
-	    		else
-	    		{
-	    			unpartneredStations += stationCarts.getStation() + ",";
 	    		}
 	    	}
 	    	
@@ -267,7 +304,7 @@ public class CampaignService implements ICampaignService{
 	    	new Thread(() -> Util.clearQuuRDSCache()).start();
     	}
     	
-    	return new String[]{status, unpartneredStations};
+    	return new String[]{status, unpartneredStations, unlicensedStations};
     }
     
     public int deactivate(String POID, int id) {
@@ -290,22 +327,5 @@ public class CampaignService implements ICampaignService{
 		
 		Util.getWebResponse(Constant.SAVEIMAGESERVICE_URL, params, false);
     }
-    
         
-    /*
-    public static void main(String[] args) {
-		
-    	String text = "its only words and they are a";
-    	
-    	//String[] arr = text.split("(?<=\\G.{8})");
-    	
-    	//System.out.println(Arrays.toString(arr));
-    	
-    	LineItemIn lineItemIn = new LineItemIn();
-    	lineItemIn.setLine1("betty bought a bit of butter");
-    	lineItemIn.setLine2("but found the butter");
-    	
-    	//System.out.println(setDPSFields(lineItemIn));
-	}
-	*/
 }

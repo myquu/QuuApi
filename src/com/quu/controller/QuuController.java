@@ -85,7 +85,7 @@ public class QuuController {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createBillboardSchedules(BBSchedules schedules)
 	{
-		int status = quuService.createBillboardSchedules(schedules);
+		int status = quuService.createBillboardSchedules(schedules, true);
 		
 		if(status == 1)
 			return Response.status(Response.Status.OK).build();

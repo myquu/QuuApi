@@ -28,7 +28,7 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     {
     	try(
 				Connection conn = getBusinessDBConnection();
-				PreparedStatement st = conn.prepareStatement("SELECT rs.id, rs.sid, rs.call_letters, rs.package, rs.hd, rss.name, rsg.name, rsg.code, tz.Name "
+				PreparedStatement st = conn.prepareStatement("SELECT rs.id, rs.sid, rs.call_letters, rs.package, rs.hd, rs.block_automation, rss.name, rsg.name, rsg.code, tz.Name "
 						+ "FROM qb_radio_stations rs "
 						+ "JOIN qb_radio_station_subgroups rss on(rs.radio_station_subgroup_id = rss.id) "
 						+ "JOIN qb_radio_station_groups rsg on(rss.radio_station_group_id = rsg.id) "
@@ -49,11 +49,11 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
 	            			callLetters = rs.getString(3);
 		            	
 		            	//Unique station per row
-		            	stationIdMap.put(id, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9)));
+		            	stationIdMap.put(id, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10)));
 		            	
-		            	sidMap.put(sid, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9)));
+		            	sidMap.put(sid, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10)));
 		            	
-		            	callLettersMap.put(callLetters, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9)));
+		            	callLettersMap.put(callLetters, new Station(id, sid, callLetters, rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10)));
 		            }while(rs.next());
 		            
 		            return new StationMaps(stationIdMap, sidMap, callLettersMap);
@@ -150,11 +150,12 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
     	return -1;
     }
 	
+	
 	public int createBillboardSchedule(int campaignId, BBSchedule schedule)
     {
     	try(
     			Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call qrt_sproc_save_time_and_dependants_NG1(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call qrt_sproc_save_time_and_dependants_NG1(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 			)
         {
     		//Basic campaign
@@ -173,15 +174,16 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
             st.setNull(13, Types.VARCHAR);
             st.setInt(14, 0);
             st.setInt(15, 0);
-            st.setNull(16, Types.VARCHAR);
+            st.setInt(16, schedule.getBlock_automation());
+            st.setNull(17, Types.VARCHAR);
                                     
-            st.registerOutParameter(17, Types.VARCHAR);
-            st.registerOutParameter(18, Types.INTEGER);
+            st.registerOutParameter(18, Types.VARCHAR);
             st.registerOutParameter(19, Types.INTEGER);
+            st.registerOutParameter(20, Types.INTEGER);
             
             st.executeUpdate();
 	        
-            return st.getInt(19); 
+            return st.getInt(20); 
 		}
         catch(SQLException ex)
         {
@@ -242,4 +244,22 @@ public class QuuDAO extends BaseDAO implements IQuuDAO{
         	System.out.println(new java.util.Date() + "NetworkApp:QuuDAO orderActiveRTCampaigns " + ex.getMessage());
         }
 	}
+	
+	public void addStationNoAutomationSchedule(int campaignId)
+	{
+		try(
+    			Connection conn = getBusinessDBConnection();
+    			CallableStatement st = conn.prepareCall("call CreateBlockAutomationScheduleFromBillboard(?)");
+			)
+        {
+    		st.setInt(1, campaignId);
+    		                        
+            st.executeUpdate();
+	    }
+        catch(SQLException ex)
+        {
+        	System.out.println(new java.util.Date() + "NetworkApp:QuuDAO addStationNoAutomationSchedule " + ex.getMessage());
+        }
+	}
+	
 }

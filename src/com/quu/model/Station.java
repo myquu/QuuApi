@@ -22,6 +22,7 @@ public class Station
     @JsonProperty("HD")  //Without this it will be deserialised as "hd"
     private int hd;
     
+    private int ignoreAutomation;
     private String marketName;
     private String groupName;
     private String groupCode;

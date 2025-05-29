@@ -17,5 +17,5 @@ public interface IQuuService {
 	
 	public List<String> createBillboardsAndDependants(List<BBCampaign> campaignList);
 	
-	public int createBillboardSchedules(BBSchedules schedules); 
+	public int createBillboardSchedules(BBSchedules schedules, boolean takeStatusAction); 
 }

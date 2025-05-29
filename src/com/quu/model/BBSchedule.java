@@ -3,6 +3,7 @@ package com.quu.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,8 @@ public class BBSchedule {
     private List<String> day_ids;
 	private List<String> option_ids;
 	private int show_logo_mus;
-	
+	@JsonProperty("ignore_automation")
+	private int block_automation;
 	
 	//Transform end time from 00:00 => 23:59
 	public void setEnd_time(String end_time) {

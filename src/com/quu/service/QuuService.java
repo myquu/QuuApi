@@ -87,16 +87,7 @@ public class QuuService implements IQuuService{
 			
 			if(campaignId != -1)
 			{
-				for(BBSchedule schedule : campaign.getScheduleList())
-				{
-					int scheduleId = quuDAO.createBillboardSchedule(campaignId, schedule);
-					
-					//If the times are not in mm:ss format then don't activate the campaign. Else GetJ2GCampaigns() data will throw error and bring the entire system down.
-					if(scheduleId == -1 || !(schedule.getStart_time().matches("^[0-9]{2}:[0-9]{2}$") && schedule.getEnd_time().matches("^[0-9]{2}:[0-9]{2}$")))
-					{
-						status = -1;
-					}
-				}
+				status = createBillboardSchedules(new BBSchedules(campaignId, campaign.getScheduleList()), false);
 			}
 			else
 			{
@@ -113,8 +104,10 @@ public class QuuService implements IQuuService{
     	    		
     	    		new Thread(() -> saveImageOnImageserver(imageUrl, campaignId, imageNameF)).start();
     	    	}
+				
+				new Thread(() -> Util.clearQuuRDSCache()).start();
 			}
-			//If there was an error in creating the campaign or any of its schedules or any schedule had times in wrong format then deactivate the campaign.
+			//If there was an error in creating the campaign or any of its schedules or any schedule had times in wrong format then deactivate the campaign. This is a new campaign being created.
 			else
 			{
 				quuDAO.deactivateBillboard(campaignId);
@@ -122,8 +115,7 @@ public class QuuService implements IQuuService{
 				errantCampaignNames.add(campaign.getName());
 			}
 		}
-		
-		
+				
 		//If all campaigns were successfully created (and activated) OR if some of the campaigns were created (and activated) then create the ordering of the (active) campaigns so they can be reordered from the UI later.  
 		new Thread(() -> {
 			if(errantCampaignNames.isEmpty() || errantCampaignNames.size() < campaignList.size())
@@ -135,12 +127,12 @@ public class QuuService implements IQuuService{
 		return errantCampaignNames;
 	}
 	
-	public int createBillboardSchedules(BBSchedules schedules)
+	public int createBillboardSchedules(BBSchedules schedules, boolean takeStatusAction)
 	{
 		int status = 1;  //Change status to -1 only in case of an error during creation of the schedule.
 		
 		int campaignId = schedules.getCampaignID();
-					
+				
 		for(BBSchedule schedule : schedules.getScheduleList())
 		{
 			int scheduleId = quuDAO.createBillboardSchedule(campaignId, schedule);
@@ -150,21 +142,43 @@ public class QuuService implements IQuuService{
 			{
 				status = -1;
 			}
-		}
+			//If this schedule has the ignore_automation flag set and there are ignore_automation stations in the schedule then for those stations copy the date and start and end times to another table. 
+			else if(schedule.getBlock_automation() == 1)
+			{
+				Map<Integer, Station> stationIdMap = Scheduler.stationMaps.getStationIdMap();
+				
+				List<String> stationIds = schedule.getRadio_station_ids();
+				
+				for(String stationId : stationIds)  //We assume these station Ids exist in our DB
+				{
+					Station station = stationIdMap.get(Integer.valueOf(stationId));
 					
-		//If there was an error in creating any of the schedules or any schedule had times in wrong format then deactivate the campaign.
-		if(status == -1)
-		{
-			quuDAO.deactivateBillboard(campaignId);
+					if(station.getIgnoreAutomation() == 1)
+					{
+						quuDAO.addStationNoAutomationSchedule(campaignId);
+					}
+				}
+			}
 		}
-		else
+		
+		//If it goes in the below block then we are adding schedules to an existing campaign which may or may not be active.
+		if(takeStatusAction)
 		{
-			//quuDAO.activateBillboard(campaignId);
-			
-			//If all schedules were successfully created and the campaigns was activated then create the ordering of the (active) campaigns so they can be reordered from the UI later.
-			new Thread(() -> {
-				quuDAO.orderActiveRTCampaigns();
-			}).start();
+			//If there was an error in creating any of the schedules or any schedule had times in wrong format then deactivate the campaign.
+			if(status == -1)
+			{
+				quuDAO.deactivateBillboard(campaignId);
+			}
+			else
+			{
+				//quuDAO.activateBillboard(campaignId);
+				
+				//If all schedules were successfully created and the campaign was activated then create the ordering of the (active) campaigns so they can be reordered from the UI later.
+				new Thread(() -> {
+					quuDAO.orderActiveRTCampaigns();
+					Util.clearQuuRDSCache();
+				}).start();
+			}
 		}
 		
 		return status;

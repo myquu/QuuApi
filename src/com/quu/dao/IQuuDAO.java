@@ -24,4 +24,6 @@ public interface IQuuDAO {
 	public int activateBillboard(int campaignId);
 	
 	public void orderActiveRTCampaigns();
+	
+	public void addStationNoAutomationSchedule(int campaignId);
 }

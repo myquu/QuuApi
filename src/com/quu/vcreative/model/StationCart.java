@@ -29,4 +29,5 @@ public class StationCart {
 	//These are not passed from controller. They are used internally
 	private int stationId;
 	private String groupCode;
+	private int noScrubCartno;
 }

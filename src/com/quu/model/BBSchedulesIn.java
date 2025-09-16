@@ -18,10 +18,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true) 
-public class BBSchedules {
+public class BBSchedulesIn {
 
 	private int campaignID;
     @JsonProperty("schedules")	
-   	private List<BBSchedule> scheduleList;
+   	private List<BBScheduleIn> scheduleList;
 		
 }

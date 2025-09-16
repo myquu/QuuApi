@@ -22,7 +22,7 @@ public interface ICampaignDAO {
     
     public CampaignStationDetail assignStations(String POID, int id, String station_ids);
     
-    public void assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String VC_contractno, String carts);
+    public int assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String VC_contractno, String carts);
     
     public void deleteStationsCarts(String POID, int id, int stationId, String carts);
     

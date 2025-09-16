@@ -16,7 +16,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true) 
-public class BBSchedule {
+public class BBScheduleIn {
 
 	private String name;
 	private String start_time;
@@ -30,6 +30,7 @@ public class BBSchedule {
 	private int show_logo_mus;
 	@JsonProperty("ignore_automation")
 	private int block_automation;
+	private int override;
 	
 	//Transform end time from 00:00 => 23:59
 	public void setEnd_time(String end_time) {

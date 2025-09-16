@@ -189,11 +189,13 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
 		return null;
 	}
 	
-	public void assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String VC_contractno, String carts)
+	//In the SP, sqlexception is handled so java SQLException should never get thrown. In case of an exception a rollback will be issued and control will exit the SP. 
+	//The out param can return 1 for success or 0 for failure.
+	public int assignStationCarts(int advertiserId, int itemId, int id, String startDate, String endDate, int stationId, String VC_contractno, String carts)
 	{
 		try(
 				Connection conn = getBusinessDBConnection();
-    			CallableStatement st = conn.prepareCall("call AssignStationCartsToCampaignVC(?,?,?,?,?,?,?,?)");
+    			CallableStatement st = conn.prepareCall("call AssignStationCartsToCampaignVC(?,?,?,?,?,?,?,?,?)");
 			)
         {
 			st.setInt(1, advertiserId);
@@ -204,14 +206,18 @@ public class CampaignDAO extends BaseDAO implements ICampaignDAO{
         	st.setInt(6, stationId);
         	st.setString(7, VC_contractno);
         	st.setString(8, carts);
-        	
+        	st.registerOutParameter(9, Types.INTEGER);
+            
             st.executeUpdate();
+	        
+            return st.getInt(9);
         }
         catch(SQLException ex)
         {
         	System.out.println(new java.util.Date() + "VCreative:CampaignDAO assignStationCarts " + ex.getMessage());
         }
-			
+		
+		return 1;  //This is here because it must return some value. It can only be 1
 	}
 	
 	public void deleteStationsCarts(String POID, int id, int stationId, String carts)

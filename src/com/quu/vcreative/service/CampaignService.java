@@ -198,7 +198,7 @@ public class CampaignService implements ICampaignService{
     		{
 				station_ids += station.getId() + ",";
 	    		
-	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), stationCarts.getVC_contractno(), station.getId(), station.getGroupCode()));
+	    		partneredStationCartList.add(new StationCart(null, stationCarts.getCartList(), stationCarts.getVC_contractno(), station.getId(), station.getGroupCode(), station.getNoScrubCartno()));
 	    		//campaignDAO.saveTraffic(campaignStation.getId(), station.getId(), String.join(",", cartList));
     		}
     	}
@@ -208,6 +208,18 @@ public class CampaignService implements ICampaignService{
     	{
 	    	station_ids = station_ids.substring(0, station_ids.length()-1);  //Remove the last comma
 	    	
+	    	//TEST. IF THE STATION LIST CONTAINS KBBH THEN DO NOT PROCESS THE REQUEST AND RETURN FAILURE STATUS. TO BE REMOVED
+	    	String[] elements = station_ids.split(",");
+	        
+	        for (String element : elements) 
+	        {
+	            if ("180663".equals(element)) 
+	            {
+	            	status = "0";
+		    		return new String[]{status, unpartneredStations, unlicensedStations};
+	            }
+	        }
+	    	/////////////////////////////////////////////////	    		    	
 	    	/*The below call
 	    	 * 1. Adds the advertiser to the campaign by selecting an existing one or creating a new one.
 	    	 * 2. Assigns new stations to the advertiser(if needed). 
@@ -220,18 +232,28 @@ public class CampaignService implements ICampaignService{
 	    	CampaignStationDetail detail = campaignDAO.assignStations(campaignStation.getVC_POID(), campaignStation.getId(), station_ids);
 	    	
 	    	//If its a VC campaign
-	    	if(detail.getStatus() == 1)
+	    	if(detail.getStatus() == 1)  //If it goes inside this block, status changes to 1 but that can change on line #275
 	    	{
+	    		status = "1";
+	    		
+	    		//Iterate over the list of stations
 	    		for(StationCart stationCarts : partneredStationCartList)
 	    		{
-	    			List<String> scrubbedCartList = new ArrayList<String>();
+	    			List<String> scrubbedCartList = new ArrayList<String>();  //This list is reinitialised per station
 	    			
-		    		//Delete all non numeric characters from carts
+	    			//Iterate over the list of carts for each station
 		    		for(String scrubbedCart : stationCarts.getCartList())
 		    		{
-		    			scrubbedCart = scrubbedCart.replaceAll("\\D", "");
+		    			if(stationCarts.getNoScrubCartno() == 0)
+		    			{		    			
+			    			//Delete all non numeric characters from carts
+			    			//scrubbedCart = scrubbedCart.replaceAll("\\D", "");
+			    			
+			    			//Delete all non digits preceding the first digit. Positive lookahead used here. This matches the rule in RDSParser for Ad syncs.
+			    			scrubbedCart = scrubbedCart.replaceAll("^\\D+(?=\\d)", "");
+		    			}
 		    			
-		    			//Weed out empty cart strings
+		    			//Weed out empty cart strings. Below we take only non empty carts.
 		    			if(!scrubbedCart.isEmpty())
 		    			{
 		    				//Special handling of carts is needed for Cumulus stations. vCreative may or may not send them with leading 0s. We make sure they are 6 digits long by padding with leading zeroes. If its already 6 digits or more we leave it as is.
@@ -240,14 +262,24 @@ public class CampaignService implements ICampaignService{
 		    					scrubbedCart = String.format("%1$6s", scrubbedCart).replace(' ', '0');
 				    		}
 		    				
-		    				scrubbedCartList.add(scrubbedCart);
+		    				
+		    				//Prohibit carts 9998 or 9999 from being entered. These are used for fake events and if we allowed an ad sync with these carts then During Other BBs will not show during fake events. Only Defaults will show. 
+		    				if(!Arrays.asList(new String[]{"9998", "9999"}).contains(scrubbedCart))
+		    				{
+		    					scrubbedCartList.add(scrubbedCart);
+		    				}
 		    			}
 		    		}
 		    		
-		    		campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), stationCarts.getVC_contractno(), String.join(",", scrubbedCartList));
+		    		//The scrubbedCartList passed to the below function could be empty in which case an rdo campaign record will be added for the station but no specific spot would be added for that record.
+		    		int ret = campaignDAO.assignStationCarts(detail.getAdvertiserId(), detail.getItemId(), campaignStation.getId(), detail.getStartDate(), detail.getEndDate(), stationCarts.getStationId(), stationCarts.getVC_contractno(), String.join(",", scrubbedCartList));
+		    	
+		    		//If the above call failed then set status to "0". We are saying in the enclosing loop if any pass fails then we will let the loop continue with other passes but the response will be a failure code.
+		    		if(ret == 0)
+		    		{
+		    			status = String.valueOf(ret);
+		    		}
 	    		}
-	    		
-	    		status = "1";
 	    		
 	    		new Thread(() -> Util.clearQuuRDSCache()).start();
 	    	}
